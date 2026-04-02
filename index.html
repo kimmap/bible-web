@@ -50,6 +50,48 @@
                 }
             }
 
+            html.theme-light {
+                --primary-color: #8b6f47;
+                --bg-color: #f0e8d8;
+                --card-bg: #faf4e8;
+                --text-main: #2c1f0e;
+                --text-sub: #7a6348;
+                --border: #c8b49a;
+                --border-light: #ddd0ba;
+                --hover-bg: #ede3d0;
+                --expand-btn-bg: #e0d5c0;
+                --expand-btn-color: #5c4a30;
+                --expand-btn-hover: #d0c4aa;
+                --highlight-bg: #f5d87a;
+                --origin-bg: #ede0cc;
+                --copied-bg: #d4edcc;
+                --sel-bg: #ddd0ba;
+                --shadow: rgba(80, 50, 10, 0.15);
+                --primary-hover: #6b5235;
+                --toast-bg: #5a8a3a;
+            }
+
+            html.theme-dark {
+                --primary-color: #60a5fa;
+                --bg-color: #0f172a;
+                --card-bg: #1e293b;
+                --text-main: #e2e8f0;
+                --text-sub: #94a3b8;
+                --border: #334155;
+                --border-light: #1e293b;
+                --hover-bg: #263348;
+                --expand-btn-bg: #334155;
+                --expand-btn-color: #94a3b8;
+                --expand-btn-hover: #475569;
+                --highlight-bg: #854d0e;
+                --origin-bg: #1e3a5f;
+                --copied-bg: #14532d;
+                --sel-bg: #1e3a5f;
+                --shadow: rgba(0, 0, 0, 0.4);
+                --primary-hover: #3b82f6;
+                --toast-bg: #16a34a;
+            }
+
             body {
                 font-family:
                     -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
@@ -310,6 +352,38 @@
                 text-align: center;
             }
 
+            .theme-controls {
+                display: flex;
+                gap: 3px;
+                margin-left: 10px;
+            }
+
+            .theme-btn {
+                padding: 4px 10px;
+                background: var(--expand-btn-bg);
+                color: var(--expand-btn-color);
+                font-size: 13px;
+                font-weight: 600;
+                border-radius: 6px;
+                cursor: pointer;
+                border: none;
+                line-height: 1.4;
+                transition: background 0.15s, color 0.15s;
+            }
+
+            .theme-btn:hover {
+                background: var(--expand-btn-hover);
+            }
+
+            .theme-btn.active {
+                background: var(--primary-color);
+                color: #fff;
+            }
+
+            .theme-btn.active:hover {
+                background: var(--primary-hover);
+            }
+
             #toast {
                 position: fixed;
                 background-color: var(--toast-bg);
@@ -432,19 +506,70 @@
                 width: 0%;
             }
             @media (max-width: 700px) {
+                /* 컬럼 헤더 - 단일 컬럼에서 의미 없음 */
+                .transcription-col-header {
+                    display: none;
+                }
+                /* 외부 컨테이너 border 제거 → 카드형 레이아웃 허용 */
                 body.transcription-mode #resultList {
                     grid-template-columns: 1fr;
+                    gap: 0;
+                    border: none;
+                    border-radius: 0;
+                    overflow: visible;
                 }
+                /* 원문 셀: 카드 상단 */
                 .result-item.left-cell {
-                    border-right: none;
+                    background: var(--origin-bg);
+                    border: 1px solid var(--border-light);
                     border-bottom: none;
-                    padding-bottom: 4px;
+                    border-right: none;
+                    border-radius: 8px 8px 0 0;
+                    padding: 10px 12px 6px;
+                    margin: 0;
                 }
+                /* 필사 셀: 카드 하단 */
                 .transcription-cell {
-                    padding-top: 4px;
-                    border-bottom: 1px solid var(--border-light);
+                    border: 1px solid var(--border-light);
+                    border-top: none;
+                    border-radius: 0 0 8px 8px;
+                    padding: 8px 12px 10px;
+                    margin-bottom: 8px;
+                }
+                /* 텍스트에어리어 최소 높이 */
+                .transcription-textarea {
+                    min-height: 72px;
                 }
             }
+
+            /* ── TTS 버튼 ───────────────────────────────────────── */
+            .tts-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 30px;
+                height: 30px;
+                border: none;
+                border-radius: 50%;
+                background: transparent;
+                color: var(--text-sub);
+                cursor: pointer;
+                padding: 0;
+                flex-shrink: 0;
+                transition: background 0.15s, color 0.15s;
+            }
+            .tts-btn::before {
+                content: '';
+                display: block;
+                width: 0;
+                height: 0;
+                border-top: 6px solid transparent;
+                border-bottom: 6px solid transparent;
+                border-left: 11px solid currentColor;
+                margin-left: 2px; /* 시각적 중앙 보정 */
+            }
+            .tts-btn:hover { background: var(--expand-btn-bg); color: var(--primary-color); }
+            .tts-btn.speaking { color: var(--primary-color); background: var(--sel-bg); }
 
             /* ── 원문 가리기 ─────────────────────────────────────── */
             .cover-controls {
@@ -517,6 +642,140 @@
                 user-select: text;
                 -webkit-user-select: text;
             }
+
+            /* ── 바텀 네비게이션 (모바일 전용) ──────────────────────── */
+            .bottom-nav { display: none; }
+            .settings-overlay { display: none; }
+            .settings-sheet { display: none; }
+
+            @media (max-width: 767px) {
+                body {
+                    padding: 12px 10px calc(70px + env(safe-area-inset-bottom));
+                }
+                .container {
+                    padding: 16px 12px;
+                }
+                h1 {
+                    font-size: 1.4rem;
+                    margin-bottom: 14px;
+                }
+                .font-size-controls,
+                .mode-tabs {
+                    display: none;
+                }
+                .cover-controls {
+                    flex-wrap: wrap;
+                    gap: 6px 10px;
+                }
+                .cover-hint {
+                    width: 100%;
+                    font-size: 11px;
+                    line-height: 1.4;
+                }
+
+                /* 바텀 네비 바 */
+                .bottom-nav {
+                    display: flex;
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    height: calc(56px + env(safe-area-inset-bottom));
+                    padding-bottom: env(safe-area-inset-bottom);
+                    background: var(--card-bg);
+                    border-top: 1px solid var(--border);
+                    box-shadow: 0 -2px 12px var(--shadow);
+                    z-index: 900;
+                    align-items: stretch;
+                }
+                .bottom-nav-btn {
+                    flex: 1;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 3px;
+                    background: none;
+                    border: none;
+                    color: var(--text-sub);
+                    font-size: 10px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    padding: 8px 0 6px;
+                    border-radius: 0;
+                    transition: color 0.15s;
+                    -webkit-tap-highlight-color: transparent;
+                }
+                .bottom-nav-btn.active {
+                    color: var(--primary-color);
+                }
+                .bottom-nav-btn svg {
+                    width: 22px;
+                    height: 22px;
+                }
+
+                /* 설정 바텀 시트 */
+                .settings-overlay {
+                    display: none;
+                    position: fixed;
+                    inset: 0;
+                    background: rgba(0,0,0,0.35);
+                    z-index: 940;
+                }
+                .settings-overlay.open { display: block; }
+
+                .settings-sheet {
+                    display: block;
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    background: var(--card-bg);
+                    border-top: 1px solid var(--border);
+                    border-radius: 16px 16px 0 0;
+                    padding: 8px 20px calc(76px + env(safe-area-inset-bottom));
+                    box-shadow: 0 -4px 24px var(--shadow);
+                    z-index: 950;
+                    transform: translateY(100%);
+                    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+                }
+                .settings-sheet.open { transform: translateY(0); }
+
+                .settings-sheet-handle {
+                    width: 36px;
+                    height: 4px;
+                    background: var(--border);
+                    border-radius: 2px;
+                    margin: 0 auto 16px;
+                }
+                .settings-sheet-title {
+                    font-size: 13px;
+                    font-weight: 700;
+                    color: var(--text-sub);
+                    text-align: center;
+                    margin-bottom: 12px;
+                    letter-spacing: 0.05em;
+                    text-transform: uppercase;
+                }
+                .settings-row {
+                    display: flex;
+                    align-items: center;
+                    justify-content: space-between;
+                    padding: 14px 0;
+                    border-bottom: 1px solid var(--border-light);
+                }
+                .settings-row:last-child { border-bottom: none; }
+                .settings-row-label {
+                    font-size: 15px;
+                    font-weight: 600;
+                    color: var(--text-main);
+                }
+                .settings-row-controls {
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+            }
         </style>
     </head>
 
@@ -531,6 +790,10 @@
                 <button class="font-size-btn" onclick="changeFontSize(-1)">−</button>
                 <span class="font-size-display" id="fontSizeDisplay">16px</span>
                 <button class="font-size-btn" onclick="changeFontSize(1)">+</button>
+                <div class="theme-controls">
+                    <button class="theme-btn" data-theme="light" title="라이트 모드" onclick="applyTheme('light')">☀</button>
+                    <button class="theme-btn" data-theme="dark" title="다크 모드" onclick="applyTheme('dark')">☾</button>
+                </div>
             </div>
 
             <div class="search-box">
@@ -560,6 +823,44 @@
             <ul id="resultList" class="result-list"></ul>
         </div>
 
+        <!-- 바텀 네비게이션 (모바일) -->
+        <nav class="bottom-nav">
+            <button class="bottom-nav-btn active" id="bnSearch" onclick="switchMode('search')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <span>검색</span>
+            </button>
+            <button class="bottom-nav-btn" id="bnTranscription" onclick="switchMode('transcription')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+                <span>필사</span>
+            </button>
+            <button class="bottom-nav-btn" id="bnSettings" onclick="toggleSettingsSheet()">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                <span>설정</span>
+            </button>
+        </nav>
+
+        <!-- 설정 바텀 시트 (모바일) -->
+        <div class="settings-overlay" id="settingsOverlay" onclick="closeSettingsSheet()"></div>
+        <div class="settings-sheet" id="settingsSheet">
+            <div class="settings-sheet-handle"></div>
+            <div class="settings-sheet-title">설정</div>
+            <div class="settings-row">
+                <span class="settings-row-label">글자 크기</span>
+                <div class="settings-row-controls">
+                    <button class="font-size-btn" onclick="changeFontSize(-1)">−</button>
+                    <span class="font-size-display" id="fontSizeDisplaySheet">16px</span>
+                    <button class="font-size-btn" onclick="changeFontSize(1)">+</button>
+                </div>
+            </div>
+            <div class="settings-row">
+                <span class="settings-row-label">테마</span>
+                <div class="settings-row-controls theme-controls">
+                    <button class="theme-btn" data-theme="light" title="라이트 모드" onclick="applyTheme('light')">☀ 라이트</button>
+                    <button class="theme-btn" data-theme="dark" title="다크 모드" onclick="applyTheme('dark')">☾ 다크</button>
+                </div>
+            </div>
+        </div>
+
         <script>
             // ── Font size ────────────────────────────────────────────────
             const FONT_MIN = 12;
@@ -569,6 +870,8 @@
             function applyFontSize() {
                 document.documentElement.style.fontSize = currentFontSize + "px";
                 document.getElementById("fontSizeDisplay").textContent = currentFontSize + "px";
+                const sheetEl = document.getElementById("fontSizeDisplaySheet");
+                if (sheetEl) sheetEl.textContent = currentFontSize + "px";
             }
 
             function changeFontSize(delta) {
@@ -579,14 +882,94 @@
 
             applyFontSize();
 
+            // ── Theme ────────────────────────────────────────────────
+            function applyTheme(theme) {
+                const html = document.documentElement;
+                html.classList.remove('theme-light', 'theme-dark');
+                if (theme === 'light') html.classList.add('theme-light');
+                if (theme === 'dark')  html.classList.add('theme-dark');
+
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.theme === theme);
+                });
+
+                if (theme === 'light' || theme === 'dark') {
+                    localStorage.setItem('themePreference', theme);
+                } else {
+                    localStorage.removeItem('themePreference');
+                }
+            }
+
+            applyTheme(localStorage.getItem('themePreference') || 'auto');
+
+            // ── Safari 감지 & TTS ────────────────────────────────────
+            const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+            let ttsCurrentBtn = null;
+
+            function getBestKoreanVoice() {
+                const voices = window.speechSynthesis.getVoices();
+                // enhanced/premium > 일반 Korean 순으로 선택
+                const koVoices = voices.filter(v => v.lang.startsWith('ko'));
+                return (
+                    koVoices.find(v => /enhanced|premium/i.test(v.name)) ||
+                    koVoices.find(v => v.localService) ||
+                    koVoices[0] ||
+                    null
+                );
+            }
+
+            function speakVerse(text, btn) {
+                const synth = window.speechSynthesis;
+                if (!synth) return;
+
+                // 이미 같은 버튼 클릭 → 중지
+                if (ttsCurrentBtn === btn && synth.speaking) {
+                    synth.cancel();
+                    return;
+                }
+
+                // 기존 재생 중지
+                if (synth.speaking) synth.cancel();
+                if (ttsCurrentBtn) ttsCurrentBtn.classList.remove('speaking');
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ko-KR';
+                utterance.rate = 0.9;
+
+                const voice = getBestKoreanVoice();
+                if (voice) utterance.voice = voice;
+
+                utterance.onstart = () => {
+                    btn.classList.add('speaking');
+                    ttsCurrentBtn = btn;
+                };
+                utterance.onend = () => {
+                    btn.classList.remove('speaking');
+                    if (ttsCurrentBtn === btn) ttsCurrentBtn = null;
+                };
+                utterance.onerror = () => {
+                    btn.classList.remove('speaking');
+                    if (ttsCurrentBtn === btn) ttsCurrentBtn = null;
+                };
+
+                synth.speak(utterance);
+            }
+
             // ── 모드 관리 ────────────────────────────────────────────
             let currentMode = 'search'; // 'search' | 'transcription'
 
             function switchMode(mode, skipSave) {
                 currentMode = mode;
                 if (!skipSave) localStorage.setItem('bibleMode', mode);
+                if (window.speechSynthesis && window.speechSynthesis.speaking) {
+                    window.speechSynthesis.cancel();
+                    if (ttsCurrentBtn) { ttsCurrentBtn.classList.remove('speaking'); ttsCurrentBtn = null; }
+                }
                 document.getElementById('tabSearch').classList.toggle('active', mode === 'search');
                 document.getElementById('tabTranscription').classList.toggle('active', mode === 'transcription');
+                document.getElementById('bnSearch').classList.toggle('active', mode === 'search');
+                document.getElementById('bnTranscription').classList.toggle('active', mode === 'transcription');
                 document.body.classList.toggle('transcription-mode', mode === 'transcription');
                 document.getElementById('resultList').innerHTML = '';
                 document.getElementById('status').textContent = '';
@@ -597,6 +980,23 @@
                 if (isDataLoaded && document.getElementById('searchInput').value.trim()) {
                     searchBible();
                 }
+            }
+
+            // ── 바텀 시트 ────────────────────────────────────────────────
+            function toggleSettingsSheet() {
+                const sheet = document.getElementById('settingsSheet');
+                const overlay = document.getElementById('settingsOverlay');
+                if (sheet.classList.contains('open')) {
+                    closeSettingsSheet();
+                } else {
+                    sheet.classList.add('open');
+                    overlay.classList.add('open');
+                }
+            }
+
+            function closeSettingsSheet() {
+                document.getElementById('settingsSheet').classList.remove('open');
+                document.getElementById('settingsOverlay').classList.remove('open');
             }
 
             // ── 원문 가리기 ──────────────────────────────────────────────
@@ -622,6 +1022,7 @@
             }
 
             const BIBLE_URL = "./bible_structured.json";
+            const SW_VERSION = "v2";
             let bibleData = [];
             let isDataLoaded = false;
 
@@ -760,15 +1161,16 @@
                     document.getElementById("searchInput").value = savedQuery;
                 }
 
-                statusEl.textContent = "성경 데이터 다운로드 중... (약 6MB)";
-
                 try {
-                    const response = await fetch(BIBLE_URL);
+                    registerServiceWorker();
+                    statusEl.textContent = "성경 데이터 로드 중...";
+                    const response = await fetch(BIBLE_URL, {
+                        cache: "default",
+                    });
                     if (!response.ok) throw new Error("네트워크 오류");
-
                     bibleData = await response.json();
-                    isDataLoaded = true;
 
+                    isDataLoaded = true;
                     statusEl.textContent = "";
 
                     if (savedQuery) {
@@ -783,6 +1185,14 @@
                     statusEl.style.color = "red";
                 }
             };
+
+            function registerServiceWorker() {
+                if (!("serviceWorker" in navigator)) return;
+                const swUrl = `./sw.js?version=${SW_VERSION}`;
+                navigator.serviceWorker.register(swUrl).catch((error) => {
+                    console.warn("Service worker registration failed:", error);
+                });
+            }
 
             function searchBible() {
                 if (!isDataLoaded) return;
@@ -919,6 +1329,19 @@
                         // 좌측 셀
                         li.classList.add('left-cell');
                         expandBtn.style.display = 'none';
+
+                        // Safari에서만 TTS 버튼 추가
+                        if (isSafari && window.speechSynthesis) {
+                            const ttsBtn = document.createElement('button');
+                            ttsBtn.className = 'tts-btn';
+                            ttsBtn.title = '읽어주기';
+                            ttsBtn.textContent = '';
+                            ttsBtn.onclick = (e) => {
+                                e.stopPropagation();
+                                speakVerse(item.content, ttsBtn);
+                            };
+                            inner.insertBefore(ttsBtn, textWrap);
+                        }
 
                         const original = item.content;
 

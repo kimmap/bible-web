@@ -7,10 +7,84 @@
 
 이 프로젝트는 정적 웹 호스팅(GitHub Pages 등)에 배포하여 누구나 무료로 사용할 수 있습니다.
 
+## ☁️ Cloudflare Pages로 배포하기
+
+이 프로젝트는 백엔드가 없는 정적 웹앱이므로 Cloudflare Pages에 바로 올리기 좋습니다.
+
+### 장점
+
+- `*.pages.dev` 무료 HTTPS 주소를 바로 사용할 수 있습니다.
+- 별도 서버를 계속 띄워둘 필요가 없습니다.
+- `sw.js`와 `bible_structured.json` 같은 정적 파일이 그대로 동작합니다.
+
+### 배포 절차
+
+1. GitHub 저장소를 Cloudflare Pages에 연결합니다.
+2. 빌드 설정은 정적 사이트 기준으로 둡니다.
+   - Build command: 비워두거나 `exit 0`
+   - Build output directory: 저장소 루트
+3. 첫 배포가 끝나면 `프로젝트명.pages.dev` 주소로 접속합니다.
+4. 필요하면 나중에 커스텀 도메인을 연결하고, Cloudflare가 HTTPS 인증서를 자동으로 관리하게 둡니다.
+
+### 로컬 확인
+
+로컬에서만 확인할 때는 아래처럼 임시 서버를 띄워도 됩니다.
+
+```bash
+python3 -m http.server 2323
+```
+
+이 명령은 개발용일 뿐이고, 운영 배포를 위해 항상 실행할 필요는 없습니다.
+
+### 참고
+
+- 서비스 워커는 `file://`로 직접 열면 정상 동작하지 않을 수 있으므로, 로컬 테스트도 `http://localhost` 또는 HTTPS 환경에서 하는 편이 안전합니다.
+- 이 저장소는 정적 호스팅만 필요하므로 Cloudflare Pages가 가장 간단한 선택입니다.
+
+## 🐙 GitHub Pages로 배포하기
+
+GitHub Pages도 이 프로젝트에 잘 맞습니다. 현재 구조는 정적 파일만으로 동작하므로 별도 빌드 단계가 필요 없습니다.
+
+### 권장 흐름
+
+1. GitHub에서 새 public 저장소를 하나 만듭니다.
+2. 현재 작업 디렉토리의 `origin`을 그 저장소로 바꿉니다.
+3. `main` 브랜치로 푸시합니다.
+4. GitHub 저장소 설정에서 Pages를 `Deploy from a branch`로 켭니다.
+5. Branch는 `main`, folder는 `/ (root)`로 둡니다.
+
+### 로컬에서 원격만 바꾸는 예시
+
+```bash
+git remote set-url origin https://github.com/<your-account>/<new-repo>.git
+git branch -M main
+git push -u origin main
+```
+
+### 왜 `.nojekyll`이 있나
+
+GitHub Pages는 Jekyll 처리를 거칠 수 있는데, 이 프로젝트는 순수 정적 파일 배포라서 `.nojekyll`을 두면 불필요한 처리 없이 그대로 서빙됩니다.
+
+### 주의
+
+- 이 저장소는 현재 `feat/tts` 브랜치에 있으므로, Pages 기본 브랜치를 `main`으로 맞추는 편이 가장 단순합니다.
+- 새 저장소를 만들면 기존 `origin`은 자동으로 따라가지 않으므로, 반드시 원격 URL을 새 레포로 바꿔야 합니다.
+
 ### 1. 설치 및 실행
 
 파일을 다운로드 받은 후 `index.html` 파일을 웹 브라우저로 열기만 하면 됩니다.
 (Chrome, Safari, Edge 등 최신 브라우저 권장)
+
+### 캐싱 방식
+
+이 앱은 `Service Worker + Cache Storage`를 사용합니다.
+
+- 첫 방문 시 `bible_structured.json`을 다운로드합니다.
+- 이후 새로고침에서는 브라우저 캐시를 우선 사용합니다.
+- `index.html`과 `favicon.png`도 함께 캐시해서, 네트워크가 끊겨도 앱 화면이 열립니다.
+- 성경 데이터 파일도 캐시되므로, 이미 한 번 열었던 환경에서는 오프라인 검색이 가능합니다.
+
+주의: 서비스 워커는 보통 `http://localhost` 또는 HTTPS 환경에서 정상 동작합니다. `file://`로 직접 열면 캐시가 기대대로 동작하지 않을 수 있습니다.
 
 ### 2. 데이터 구조 (`bible_structured.json`)
 
@@ -87,6 +161,7 @@ print(f"'사랑'이 포함된 구절 수: {len(results)}")
 
 *   **파일 크기**: JSON 파일은 약 6MB 정도입니다. 모바일 환경에서는 데이터 사용량에 주의가 필요할 수 있으나, 텍스트 데이터이므로 로딩 속도는 매우 빠릅니다.
 *   **초기 로딩**: 데이터를 모두 메모리에 로드한 후 검색하므로, 페이지 최초 접속 시 수 초의 로딩 시간이 걸릴 수 있습니다.
+*   **캐시 갱신**: `sw.js`의 캐시 버전을 올리면 이전 캐시가 자동으로 정리되고 새 파일이 다시 저장됩니다.
 
 ## 📝 라이선스
 
