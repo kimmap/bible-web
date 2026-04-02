@@ -64,7 +64,7 @@
 
             .container {
                 width: 100%;
-                max-width: 800px;
+                max-width: 1400px;
                 background: var(--card-bg);
                 padding: 30px;
                 border-radius: 12px;
@@ -327,6 +327,196 @@
             #toast.show {
                 opacity: 1;
             }
+
+            /* ── 모드 탭 ─────────────────────────────────────────── */
+            .mode-tabs {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 20px;
+                border-bottom: 2px solid var(--border);
+                padding-bottom: 12px;
+            }
+            .mode-tab {
+                padding: 8px 20px;
+                border-radius: 8px 8px 0 0;
+                font-size: 14px;
+                font-weight: 600;
+                background: var(--expand-btn-bg);
+                color: var(--expand-btn-color);
+                border: none;
+                cursor: pointer;
+                transition: background 0.15s, color 0.15s;
+            }
+            .mode-tab.active {
+                background: var(--primary-color);
+                color: #fff;
+            }
+            .mode-tab:hover:not(.active) {
+                background: var(--expand-btn-hover);
+            }
+
+            /* ── 필사 모드 레이아웃 ───────────────────────────────── */
+            body.transcription-mode #resultList {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 0;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                overflow: hidden;
+            }
+            .transcription-col-header {
+                background: var(--expand-btn-bg);
+                color: var(--text-sub);
+                font-size: 12px;
+                font-weight: 700;
+                text-align: center;
+                padding: 8px;
+                text-transform: uppercase;
+                letter-spacing: 0.05em;
+                border-bottom: 1px solid var(--border);
+            }
+            .transcription-col-header:first-child {
+                border-right: 1px solid var(--border);
+            }
+            .result-item.left-cell {
+                border-bottom: 1px solid var(--border-light);
+                border-right: 1px solid var(--border);
+            }
+            .transcription-cell {
+                padding: 16px;
+                border-bottom: 1px solid var(--border-light);
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            .char-pending { color: var(--text-sub); }
+            .char-correct { background: #bbf7d0; color: #065f46; border-radius: 2px; }
+            .char-wrong   { background: #fca5a5; color: #b91c1c; border-radius: 2px; }
+            .transcription-textarea {
+                width: 100%;
+                padding: 8px 10px;
+                border: 1.5px solid var(--border);
+                border-radius: 6px;
+                background: var(--bg-color);
+                color: var(--text-main);
+                font-size: 0.95em;
+                line-height: 1.6;
+                resize: none;
+                box-sizing: border-box;
+                font-family: inherit;
+                outline: none;
+                transition: border-color 0.15s;
+                flex: 1;
+                min-height: 0;
+            }
+            .transcription-textarea:focus { border-color: #10b981; }
+            .trans-progress {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                font-size: 0.8em;
+                color: var(--text-sub);
+            }
+            .trans-progress-bar {
+                flex: 1;
+                height: 4px;
+                background: var(--border-light);
+                border-radius: 2px;
+                overflow: hidden;
+            }
+            .trans-progress-fill {
+                height: 100%;
+                background: #10b981;
+                border-radius: 2px;
+                transition: width 0.1s;
+                width: 0%;
+            }
+            @media (max-width: 700px) {
+                body.transcription-mode #resultList {
+                    grid-template-columns: 1fr;
+                }
+                .result-item.left-cell {
+                    border-right: none;
+                    border-bottom: none;
+                    padding-bottom: 4px;
+                }
+                .transcription-cell {
+                    padding-top: 4px;
+                    border-bottom: 1px solid var(--border-light);
+                }
+            }
+
+            /* ── 원문 가리기 ─────────────────────────────────────── */
+            .cover-controls {
+                display: none;
+                align-items: center;
+                gap: 10px;
+                margin-top: 10px;
+            }
+            body.transcription-mode .cover-controls {
+                display: flex;
+            }
+            .cover-label {
+                font-size: 13px;
+                font-weight: 600;
+                color: var(--text-sub);
+                cursor: pointer;
+                user-select: none;
+            }
+            /* 토글 스위치 */
+            .toggle-switch {
+                position: relative;
+                width: 42px;
+                height: 24px;
+                flex-shrink: 0;
+            }
+            .toggle-switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+                position: absolute;
+            }
+            .toggle-track {
+                position: absolute;
+                inset: 0;
+                background: var(--expand-btn-bg);
+                border-radius: 12px;
+                cursor: pointer;
+                transition: background 0.2s;
+            }
+            .toggle-track::after {
+                content: '';
+                position: absolute;
+                top: 3px;
+                left: 3px;
+                width: 18px;
+                height: 18px;
+                background: #fff;
+                border-radius: 50%;
+                transition: transform 0.2s;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            }
+            .toggle-switch input:checked + .toggle-track {
+                background: #f59e0b;
+            }
+            .toggle-switch input:checked + .toggle-track::after {
+                transform: translateX(18px);
+            }
+            .cover-hint {
+                font-size: 12px;
+                color: var(--text-sub);
+            }
+            /* 원문 흐림 효과 */
+            body.origin-covered .result-item.left-cell .verse-content {
+                filter: blur(6px);
+                user-select: none;
+                -webkit-user-select: none;
+            }
+            body.origin-covered .result-item.left-cell.peek .verse-content {
+                filter: none;
+                user-select: text;
+                -webkit-user-select: text;
+            }
         </style>
     </head>
 
@@ -352,6 +542,20 @@
                 />
             </div>
 
+            <div class="mode-tabs">
+                <button class="mode-tab active" id="tabSearch" onclick="switchMode('search')">일반 검색</button>
+                <button class="mode-tab" id="tabTranscription" onclick="switchMode('transcription')">필사 모드</button>
+            </div>
+
+            <div class="cover-controls">
+                <label class="toggle-switch" title="원문 가리기">
+                    <input type="checkbox" id="coverToggle" onchange="toggleCover()">
+                    <span class="toggle-track"></span>
+                </label>
+                <span class="cover-label" onclick="document.getElementById('coverToggle').click()">원문 가리기</span>
+                <span class="cover-hint">가린 상태에서 구절을 꾹 누르면 잠시 볼 수 있어요</span>
+            </div>
+
             <div id="status">데이터 준비중...</div>
             <ul id="resultList" class="result-list"></ul>
         </div>
@@ -374,6 +578,48 @@
             }
 
             applyFontSize();
+
+            // ── 모드 관리 ────────────────────────────────────────────
+            let currentMode = 'search'; // 'search' | 'transcription'
+
+            function switchMode(mode, skipSave) {
+                currentMode = mode;
+                if (!skipSave) localStorage.setItem('bibleMode', mode);
+                document.getElementById('tabSearch').classList.toggle('active', mode === 'search');
+                document.getElementById('tabTranscription').classList.toggle('active', mode === 'transcription');
+                document.body.classList.toggle('transcription-mode', mode === 'transcription');
+                document.getElementById('resultList').innerHTML = '';
+                document.getElementById('status').textContent = '';
+                currentResults = [];
+                currentRenderCount = 0;
+                if (typeof closeExpandPanel === 'function') closeExpandPanel();
+                if (typeof removeLoadMoreBtn === 'function') removeLoadMoreBtn();
+                if (isDataLoaded && document.getElementById('searchInput').value.trim()) {
+                    searchBible();
+                }
+            }
+
+            // ── 원문 가리기 ──────────────────────────────────────────────
+            let coverActive = false;
+
+            function toggleCover() {
+                coverActive = document.getElementById('coverToggle').checked;
+                document.body.classList.toggle('origin-covered', coverActive);
+            }
+
+            // 개별 구절 꾹 누르면 잠시 해제
+            // preventDefault로 포커스를 뺏기지 않아 손 떼는 즉시 필사 이어서 가능
+            function setupCellPeek(leftLi) {
+                leftLi.addEventListener('pointerdown', (e) => {
+                    if (!coverActive) return;
+                    e.preventDefault();
+                    leftLi.classList.add('peek');
+                    leftLi.setPointerCapture(e.pointerId);
+                });
+                const endPeek = () => leftLi.classList.remove('peek');
+                leftLi.addEventListener('pointerup', endPeek);
+                leftLi.addEventListener('pointercancel', endPeek);
+            }
 
             const BIBLE_URL = "./bible_structured.json";
             let bibleData = [];
@@ -504,6 +750,16 @@
             window.onload = async () => {
                 const statusEl = document.getElementById("status");
 
+                // 저장된 탭 복원
+                const savedMode = localStorage.getItem('bibleMode') || 'search';
+                if (savedMode !== 'search') switchMode(savedMode, true);
+
+                // 저장된 검색어 복원
+                const savedQuery = localStorage.getItem('bibleQuery') || '';
+                if (savedQuery) {
+                    document.getElementById("searchInput").value = savedQuery;
+                }
+
                 statusEl.textContent = "성경 데이터 다운로드 중... (약 6MB)";
 
                 try {
@@ -515,7 +771,11 @@
 
                     statusEl.textContent = "";
 
-                    document.getElementById("searchInput").focus();
+                    if (savedQuery) {
+                        searchBible();
+                    } else {
+                        document.getElementById("searchInput").focus();
+                    }
                 } catch (error) {
                     console.error(error);
                     statusEl.textContent =
@@ -532,6 +792,7 @@
                     .value.trim();
                 if (!input) return;
 
+                localStorage.setItem('bibleQuery', input);
                 closeExpandPanel();
                 currentQuery = input;
 
@@ -592,6 +853,18 @@
                 const start = currentRenderCount;
                 const end = Math.min(start + count, currentResults.length);
 
+                // 필사 모드 첫 렌더: 컬럼 헤더 추가
+                if (currentMode === 'transcription' && start === 0) {
+                    const leftHeader = document.createElement('li');
+                    leftHeader.className = 'transcription-col-header';
+                    leftHeader.textContent = '원문';
+                    const rightHeader = document.createElement('li');
+                    rightHeader.className = 'transcription-col-header';
+                    rightHeader.textContent = '필사';
+                    fragment.appendChild(leftHeader);
+                    fragment.appendChild(rightHeader);
+                }
+
                 for (let i = start; i < end; i++) {
                     const item = currentResults[i];
                     const li = document.createElement("li");
@@ -641,7 +914,84 @@
                     inner.appendChild(expandBtn);
 
                     li.appendChild(inner);
-                    fragment.appendChild(li);
+
+                    if (currentMode === 'transcription') {
+                        // 좌측 셀
+                        li.classList.add('left-cell');
+                        expandBtn.style.display = 'none';
+
+                        const original = item.content;
+
+                        // 기존 verse-content 안에 글자별 span으로 교체
+                        content.textContent = '';
+                        const charSpans = Array.from(original).map((ch) => {
+                            const span = document.createElement('span');
+                            span.className = 'char-pending';
+                            span.textContent = ch;
+                            return span;
+                        });
+                        charSpans.forEach((s) => content.appendChild(s));
+
+                        fragment.appendChild(li);
+
+                        // 우측 필사 셀 (입력창 + 진행률만)
+                        const rightLi = document.createElement('li');
+                        rightLi.className = 'transcription-cell';
+                        setupCellPeek(li);
+
+                        // 입력창
+                        const textarea = document.createElement('textarea');
+                        textarea.className = 'transcription-textarea';
+                        textarea.placeholder = '여기에 필사하세요...';
+                        textarea.spellcheck = false;
+                        textarea.autocomplete = 'off';
+
+                        // 진행률
+                        const progressWrap = document.createElement('div');
+                        progressWrap.className = 'trans-progress';
+                        const bar = document.createElement('div');
+                        bar.className = 'trans-progress-bar';
+                        const fill = document.createElement('div');
+                        fill.className = 'trans-progress-fill';
+                        bar.appendChild(fill);
+                        const label = document.createElement('span');
+                        label.textContent = '0%';
+                        progressWrap.appendChild(bar);
+                        progressWrap.appendChild(label);
+
+                        rightLi.appendChild(textarea);
+                        rightLi.appendChild(progressWrap);
+                        fragment.appendChild(rightLi);
+
+                        // 실시간 비교
+                        textarea.addEventListener('input', () => {
+                            const typed = textarea.value;
+                            let correct = 0;
+                            charSpans.forEach((span, idx) => {
+                                if (idx < typed.length) {
+                                    if (typed[idx] === original[idx]) {
+                                        span.className = 'char-correct';
+                                        correct++;
+                                    } else {
+                                        span.className = 'char-wrong';
+                                    }
+                                } else {
+                                    span.className = 'char-pending';
+                                }
+                            });
+                            const pct = Math.round((correct / original.length) * 100);
+                            fill.style.width = pct + '%';
+                            if (typed.length >= original.length && correct === original.length) {
+                                textarea.style.borderColor = '#10b981';
+                                label.textContent = '✓ 완료';
+                            } else {
+                                textarea.style.borderColor = '';
+                                label.textContent = pct + '%';
+                            }
+                        });
+                    } else {
+                        fragment.appendChild(li);
+                    }
                 }
 
                 list.appendChild(fragment);
