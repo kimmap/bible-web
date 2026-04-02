@@ -1,336 +1,1091 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>개역개정 성경 검색</title>
+        <link rel="icon" type="image/png" href="favicon.png" />
+        <style>
+            :root {
+                --primary-color: #3b82f6;
+                --bg-color: #f8fafc;
+                --card-bg: #ffffff;
+                --text-main: #1e293b;
+                --text-sub: #64748b;
+                --border: #e2e8f0;
+                --border-light: #f1f5f9;
+                --hover-bg: #f8fafc;
+                --panel-header-bg: #f1f5f9;
+                --expand-btn-bg: #e2e8f0;
+                --expand-btn-color: #475569;
+                --expand-btn-hover: #cbd5e1;
+                --highlight-bg: #fef08a;
+                --origin-bg: #eff6ff;
+                --copied-bg: #dcfce7;
+                --sel-bg: #dbeafe;
+                --close-btn-color: #94a3b8;
+                --shadow: rgba(0, 0, 0, 0.1);
+                --primary-hover: #2563eb;
+                --toast-bg: #16a34a;
+            }
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>개역개정 성경 검색</title>
-    <link rel="icon" type="image/png" href="favicon.png">
-    <style>
-        :root {
-            --primary-color: #3b82f6;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-main: #1e293b;
-            --text-sub: #64748b;
-        }
+            @media (prefers-color-scheme: dark) {
+                :root {
+                    --primary-color: #60a5fa;
+                    --bg-color: #0f172a;
+                    --card-bg: #1e293b;
+                    --text-main: #e2e8f0;
+                    --text-sub: #94a3b8;
+                    --border: #334155;
+                    --border-light: #1e293b;
+                    --hover-bg: #263348;
+                    --panel-header-bg: #162032;
+                    --expand-btn-bg: #334155;
+                    --expand-btn-color: #94a3b8;
+                    --expand-btn-hover: #475569;
+                    --highlight-bg: #854d0e;
+                    --origin-bg: #1e3a5f;
+                    --copied-bg: #14532d;
+                    --sel-bg: #1e3a5f;
+                    --close-btn-color: #64748b;
+                    --shadow: rgba(0, 0, 0, 0.4);
+                    --primary-hover: #3b82f6;
+                    --toast-bg: #16a34a;
+                }
+            }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
+            body {
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                    "Helvetica Neue", Arial, sans-serif;
+                background-color: var(--bg-color);
+                color: var(--text-main);
+                margin: 0;
+                padding: 20px;
+                display: flex;
+                justify-content: center;
+            }
 
-        .container {
-            width: 100%;
-            max-width: 800px;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-        }
+            .container {
+                width: 100%;
+                max-width: 800px;
+                background: var(--card-bg);
+                padding: 30px;
+                border-radius: 12px;
+                box-shadow:
+                    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            }
 
-        h1 {
-            text-align: center;
-            color: var(--text-main);
-            margin-bottom: 30px;
-            font-weight: 800;
-        }
+            h1 {
+                text-align: center;
+                color: var(--text-main);
+                margin-bottom: 30px;
+                font-weight: 800;
+                font-size: 2rem;
+            }
 
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
+            .search-box {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
 
-        input[type="text"] {
-            flex-grow: 1;
-            padding: 12px 16px;
-            font-size: 16px;
-            border: 2px solid #e2e8f0;
-            border-radius: 8px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
+            input[type="text"] {
+                flex-grow: 1;
+                padding: 12px 16px;
+                font-size: 16px;
+                border: 2px solid var(--border);
+                border-radius: 8px;
+                outline: none;
+                background: var(--card-bg);
+                color: var(--text-main);
+                transition: border-color 0.2s;
+            }
 
-        input[type="text"]:focus {
-            border-color: var(--primary-color);
-        }
+            input[type="text"]:focus {
+                border-color: var(--primary-color);
+            }
 
-        button {
-            padding: 12px 24px;
-            background-color: var(--primary-color);
-            color: white;
-            font-weight: 600;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
+            button {
+                padding: 12px 24px;
+                background-color: var(--primary-color);
+                color: white;
+                font-weight: 600;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background-color 0.2s;
+            }
 
-        button:hover {
-            background-color: #2563eb;
-        }
+            button:hover {
+                background-color: var(--primary-hover);
+            }
 
-        button:disabled {
-            background-color: #94a3b8;
-            cursor: not-allowed;
-        }
+            #status {
+                text-align: center;
+                font-size: 14px;
+                color: var(--text-sub);
+                margin-bottom: 20px;
+                height: 20px;
+            }
 
-        #status {
-            text-align: center;
-            font-size: 14px;
-            color: var(--text-sub);
-            margin-bottom: 20px;
-            height: 20px;
-        }
+            .result-list {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+            }
 
-        .result-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
+            .result-item {
+                padding: 16px;
+                border-bottom: 1px solid var(--border-light);
+                position: relative;
+            }
 
-        .result-item {
-            padding: 16px;
-            border-bottom: 1px solid #f1f5f9;
-        }
+            .result-item:last-child {
+                border-bottom: none;
+            }
 
-        .result-item:last-child {
-            border-bottom: none;
-        }
+            .verse-ref {
+                font-weight: 700;
+                color: var(--primary-color);
+                margin-right: 8px;
+                font-size: 0.95em;
+            }
 
-        .verse-ref {
-            font-weight: 700;
-            color: var(--primary-color);
-            margin-right: 8px;
-            font-size: 0.95em;
-        }
+            .verse-content {
+                line-height: 1.6;
+            }
 
-        .verse-content {
-            line-height: 1.6;
-        }
+            .highlight {
+                background-color: var(--highlight-bg);
+                padding: 0 2px;
+                border-radius: 2px;
+            }
 
-        .highlight {
-            background-color: #fef08a;
-            padding: 0 2px;
-            border-radius: 2px;
-        }
+            .loading {
+                opacity: 0.6;
+                pointer-events: none;
+            }
 
-        .loading {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-    </style>
-</head>
+            .result-item:hover {
+                background-color: var(--hover-bg);
+            }
 
-<body>
+            .result-item-inner {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 8px;
+            }
 
-    <div class="container">
-        <h1>개역개정 성경 검색</h1>
+            .result-item-text {
+                flex: 1;
+                min-width: 0;
+            }
 
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="예: 창 1장, 요 3:16, 태초에"
-                onkeydown="if(event.key === 'Enter') searchBible()">
-            <button id="searchBtn" onclick="searchBible()">검색</button>
+            .expand-btn {
+                flex-shrink: 0;
+                padding: 6px 14px;
+                background: var(--expand-btn-bg);
+                color: var(--expand-btn-color);
+                font-size: 14px;
+                font-weight: 600;
+                border-radius: 6px;
+                cursor: pointer;
+                border: none;
+                line-height: 1.5;
+                transition: background 0.15s, color 0.15s;
+            }
+
+            .expand-btn:hover {
+                background: var(--expand-btn-hover);
+            }
+
+            .expand-btn.active {
+                background: var(--primary-color);
+                color: #fff;
+            }
+
+            .expand-btn.active:hover {
+                background: var(--primary-hover);
+            }
+
+            /* Overlay expand panel */
+            .expand-panel {
+                position: absolute;
+                left: 0;
+                right: 0;
+                top: 100%;
+                z-index: 200;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-top: none;
+                box-shadow: 0 8px 24px var(--shadow);
+            }
+
+            .expand-panel-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 8px 16px;
+                background: var(--panel-header-bg);
+                border-bottom: 1px solid var(--border);
+                position: sticky;
+                top: 0;
+                z-index: 1;
+            }
+
+            .expand-panel-title {
+                font-weight: 700;
+                font-size: 13px;
+                color: var(--primary-color);
+            }
+
+            .expand-close-btn {
+                background: none;
+                border: none;
+                font-size: 16px;
+                cursor: pointer;
+                color: var(--close-btn-color);
+                padding: 0 4px;
+                line-height: 1;
+                font-weight: 400;
+            }
+
+            .expand-close-btn:hover {
+                background: none;
+                color: var(--text-main);
+            }
+
+            .expand-scroll {
+                max-height: 70vh;
+                overflow-y: auto;
+                background: var(--card-bg);
+            }
+
+            .expand-sentinel {
+                height: 1px;
+            }
+
+            .expand-scroll.selecting {
+                user-select: none;
+                -webkit-user-select: none;
+            }
+
+            /* Verse rows inside the panel */
+            .modal-verse {
+                padding: 12px 16px;
+                border-bottom: 1px solid var(--border-light);
+                cursor: pointer;
+            }
+
+            .modal-verse:hover {
+                background: var(--hover-bg);
+            }
+
+            .modal-verse.origin {
+                background: var(--origin-bg);
+            }
+
+            .modal-verse.copied {
+                background: var(--copied-bg);
+            }
+
+            .modal-verse.sel-active {
+                background: var(--sel-bg);
+            }
+
+            .modal-verse .verse-ref {
+                font-weight: 700;
+                color: var(--primary-color);
+                margin-right: 6px;
+                font-size: 1em;
+            }
+
+            .modal-verse .verse-content {
+                line-height: 1.7;
+                font-size: 1.05em;
+            }
+
+            .font-size-controls {
+                display: flex;
+                align-items: center;
+                justify-content: flex-end;
+                gap: 6px;
+                margin-bottom: 16px;
+            }
+
+            .font-size-label {
+                font-size: 13px;
+                color: var(--text-sub);
+                margin-right: 4px;
+            }
+
+            .font-size-btn {
+                padding: 4px 12px;
+                background: var(--expand-btn-bg);
+                color: var(--expand-btn-color);
+                font-size: 16px;
+                font-weight: 700;
+                border-radius: 6px;
+                cursor: pointer;
+                border: none;
+                line-height: 1.4;
+                transition: background 0.15s;
+                min-width: 32px;
+            }
+
+            .font-size-btn:hover {
+                background: var(--expand-btn-hover);
+            }
+
+            .font-size-display {
+                font-size: 13px;
+                color: var(--text-sub);
+                min-width: 36px;
+                text-align: center;
+            }
+
+            #toast {
+                position: fixed;
+                background-color: var(--toast-bg);
+                color: white;
+                padding: 10px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                opacity: 0;
+                transition: opacity 0.2s;
+                pointer-events: none;
+                transform: translate(-50%, -130%);
+            }
+
+            #toast.show {
+                opacity: 1;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="toast">복사됨</div>
+
+        <div class="container">
+            <h1>개역개정 성경 검색</h1>
+
+            <div class="font-size-controls">
+                <span class="font-size-label">글자 크기</span>
+                <button class="font-size-btn" onclick="changeFontSize(-1)">−</button>
+                <span class="font-size-display" id="fontSizeDisplay">16px</span>
+                <button class="font-size-btn" onclick="changeFontSize(1)">+</button>
+            </div>
+
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="예: 창 1장, 요 3:16, 태초에"
+                    oninput="debouncedSearch()"
+                />
+            </div>
+
+            <div id="status">데이터 준비중...</div>
+            <ul id="resultList" class="result-list"></ul>
         </div>
 
-        <div id="status">데이터 준비중...</div>
-        <ul id="resultList" class="result-list"></ul>
-    </div>
+        <script>
+            // ── Font size ────────────────────────────────────────────────
+            const FONT_MIN = 12;
+            const FONT_MAX = 24;
+            let currentFontSize = parseInt(localStorage.getItem("fontSize") || "16", 10);
 
-    <script>
-        const BIBLE_URL = "./bible_structured.json";
-        let bibleData = [];
-        let isDataLoaded = false;
-
-        // Global state for pagination
-        let currentResults = [];
-        let currentQuery = "";
-        let currentRenderCount = 0;
-        const ITEMS_PER_PAGE = 20;
-
-        // Book Name Mapping (Full -> Abbr)
-        const BOOK_MAP = {
-            "창세기": "창", "출애굽기": "출", "레위기": "레", "민수기": "민", "신명기": "신",
-            "여호수아": "수", "사사기": "삿", "룻기": "룻", "사무엘상": "삼상", "사무엘하": "삼하",
-            "열왕기상": "왕상", "열왕기하": "왕하", "역 대상": "대상", "역대하": "대하", "에스라": "스",
-            "느헤미야": "느", "에스더": "에", "욥기": "욥", "시편": "시", "잠언": "잠",
-            "전도서": "전", "아가": "아", "이사야": "사", "예레미야": "렘", "예레미야애가": "애",
-            "에스겔": "겔", " 다니엘": "단", "호세아": "호", "요엘": "욜", "아모스": "암",
-            "오바댜": "옵", "요나": "욘", "미가": "미", "나훔": "나", "하박국": "합",
-            "스바냐": "습", "학개": "학", "스가랴": "슥", "말라기": "말",
-            "마태복음": "마", "마가복음": "막", "누가복음": "눅", "요한복음": "요", "사도행전": "행",
-            "로마서": "롬", "고린도전서": "고전", "고린도후서": "고후", "갈라디아서": "갈", "에베소서": "엡",
-            "빌립보서": "빌", "골로새서": "골", "데살로니가전서": "살전", "데살로니가후서": "살후", "디모데전서": "딤전",
-            "디모데후서": "딤후", "디도서": "딛", "빌레몬서": "몬", "히브리서": "히", "야고보서": "약",
-            "베드로전서": "벧전", "베드로후서": "벧후", "요한일서": "요일", "요한이서": "요이", "요한삼서": "요삼",
-            "유다서": "유", "요한계시록": "계"
-        };
-
-        // Initialize
-        window.onload = async () => {
-            const statusEl = document.getElementById('status');
-            const searchBtn = document.getElementById('searchBtn');
-
-            statusEl.textContent = "성경 데이터 다운로드 중... (약 6MB)";
-            searchBtn.disabled = true;
-
-            try {
-                const response = await fetch(BIBLE_URL);
-                if (!response.ok) throw new Error("네트워크 오류");
-
-                bibleData = await response.json();
-                isDataLoaded = true;
-
-                statusEl.textContent = `데이터 로드 완료! (총 ${bibleData.length}절)`;
-                searchBtn.disabled = false;
-
-                // Focus input
-                document.getElementById('searchInput').focus();
-
-            } catch (error) {
-                console.error(error);
-                statusEl.textContent = "데이터 로드 실패. 새로고침 해주세요.";
-                statusEl.style.color = "red";
-            }
-        };
-
-        function searchBible() {
-            if (!isDataLoaded) return;
-
-            const input = document.getElementById('searchInput').value.trim();
-            if (!input) return;
-
-            currentQuery = input;
-
-            // Perform search and determine type
-            const searchResult = performSearch(input);
-            currentResults = searchResult.data;
-            const isReference = searchResult.isReference;
-
-            const list = document.getElementById('resultList');
-            const status = document.getElementById('status');
-            list.innerHTML = "";
-            currentRenderCount = 0;
-
-            if (currentResults.length === 0) {
-                status.textContent = "검색 결과가 없습니다.";
-                // Remove load more button if exists
-                removeLoadMoreBtn();
-                return;
+            function applyFontSize() {
+                document.documentElement.style.fontSize = currentFontSize + "px";
+                document.getElementById("fontSizeDisplay").textContent = currentFontSize + "px";
             }
 
-            status.textContent = `검색 결과: ${currentResults.length}개`;
-
-            if (isReference) {
-                // If it's a reference search (e.g. Gen 1), show ALL results
-                renderBatch(currentResults.length);
-            } else {
-                // If it's a keyword search, show first 20
-                renderBatch(ITEMS_PER_PAGE);
-            }
-        }
-
-        function performSearch(query) {
-            // 1. Try Parse "Book Chapter:Verse" pattern
-            // Regex: [BookName] [Chapter] [: Verse]
-            // Supports: "창 1", "창 1:1", "창세기 1장", "요3:16"
-            const refRegex = /^([가-힣]+)\s*(\d+)(?:[:장]\s*(\d+))?.*$/;
-            const match = query.match(refRegex);
-
-            if (match) {
-                let [, bookStr, chapterStr, verseStr] = match;
-                let book = BOOK_MAP[bookStr] || bookStr;
-                const chapter = parseInt(chapterStr, 10);
-                const verse = verseStr ? parseInt(verseStr, 10) : null;
-
-                const data = bibleData.filter(item => {
-                    if (item.book !== book) return false;
-                    if (item.chapter !== chapter) return false;
-                    if (verse && item.verse !== verse) return false;
-                    return true;
-                });
-
-                return { data: data, isReference: true };
+            function changeFontSize(delta) {
+                currentFontSize = Math.min(FONT_MAX, Math.max(FONT_MIN, currentFontSize + delta));
+                localStorage.setItem("fontSize", currentFontSize);
+                applyFontSize();
             }
 
-            // 2. Fallback: Keyword Search
-            const data = bibleData.filter(item => item.content.includes(query));
-            return { data: data, isReference: false };
-        }
+            applyFontSize();
 
-        function renderBatch(count) {
-            const list = document.getElementById('resultList');
-            const fragment = document.createDocumentFragment();
+            const BIBLE_URL = "./bible_structured.json";
+            let bibleData = [];
+            let isDataLoaded = false;
 
-            // Calculate range
-            const start = currentRenderCount;
-            const end = Math.min(start + count, currentResults.length);
+            // Global state for pagination
+            let currentResults = [];
+            let currentQuery = "";
+            let currentRenderCount = 0;
+            let currentIsReference = false;
+            const ITEMS_PER_PAGE = 20;
 
-            for (let i = start; i < end; i++) {
-                const item = currentResults[i];
-                const li = document.createElement('li');
-                li.className = "result-item";
+            // Book Name Mapping (Full -> Abbr)
+            const BOOK_MAP = {
+                창세기: "창",
+                출애굽기: "출",
+                레위기: "레",
+                민수기: "민",
+                신명기: "신",
+                여호수아: "수",
+                사사기: "삿",
+                룻기: "룻",
+                사무엘상: "삼상",
+                사무엘하: "삼하",
+                열왕기상: "왕상",
+                열왕기하: "왕하",
+                역대상: "대상",
+                역대하: "대하",
+                에스라: "스",
+                느헤미야: "느",
+                에스더: "에",
+                욥기: "욥",
+                시편: "시",
+                잠언: "잠",
+                전도서: "전",
+                아가: "아",
+                이사야: "사",
+                예레미야: "렘",
+                예레미야애가: "애",
+                에스겔: "겔",
+                다니엘: "단",
+                호세아: "호",
+                요엘: "욜",
+                아모스: "암",
+                오바댜: "옵",
+                요나: "욘",
+                미가: "미",
+                나훔: "나",
+                하박국: "합",
+                스바냐: "습",
+                학개: "학",
+                스가랴: "슥",
+                말라기: "말",
+                마태복음: "마",
+                마가복음: "막",
+                누가복음: "눅",
+                요한복음: "요",
+                사도행전: "행",
+                로마서: "롬",
+                고린도전서: "고전",
+                고린도후서: "고후",
+                갈라디아서: "갈",
+                에베소서: "엡",
+                빌립보서: "빌",
+                골로새서: "골",
+                데살로니가전서: "살전",
+                데살로니가후서: "살후",
+                디모데전서: "딤전",
+                디모데후서: "딤후",
+                디도서: "딛",
+                빌레몬서: "몬",
+                히브리서: "히",
+                야고보서: "약",
+                베드로전서: "벧전",
+                베드로후서: "벧후",
+                요한일서: "요일",
+                요한이서: "요이",
+                요한삼서: "요삼",
+                유다서: "유",
+                요한계시록: "계",
+            };
 
-                const ref = document.createElement('span');
-                ref.className = "verse-ref";
-                ref.textContent = `${item.book}${item.chapter}:${item.verse}`;
-
-                const content = document.createElement('span');
-                content.className = "verse-content";
-
-                // Highlight keyword
-                // Simple heuristic: if query is NOT a reference match (no digits), treat as keyword
-                const isRefSearch = /\d/.test(currentQuery);
-                if (!isRefSearch) {
-                    const parts = item.content.split(currentQuery);
-                    content.innerHTML = parts.join(`<span class="highlight">${currentQuery}</span>`);
+            // Obsidian callout formatter
+            function buildObsidianText(items) {
+                const first = items[0];
+                const last = items[items.length - 1];
+                let rangeStr;
+                if (items.length === 1) {
+                    rangeStr = `${first.book} ${first.chapter}:${first.verse}`;
+                } else if (
+                    first.book === last.book &&
+                    first.chapter === last.chapter
+                ) {
+                    rangeStr = `${first.book} ${first.chapter}:${first.verse}-${last.verse}`;
+                } else if (first.book === last.book) {
+                    rangeStr = `${first.book} ${first.chapter}:${first.verse}-${last.chapter}:${last.verse}`;
                 } else {
-                    content.textContent = item.content;
+                    rangeStr = `${first.book} ${first.chapter}:${first.verse} - ${last.book} ${last.chapter}:${last.verse}`;
+                }
+                const lines = items
+                    .map((v) => `${v.book}${v.chapter}:${v.verse} ${v.content}`)
+                    .join("\n");
+                return `> [!Bible] ${rangeStr}\n${lines}`;
+            }
+
+            // Toast
+            let toastTimer = null;
+            function showToast(x, y) {
+                const toast = document.getElementById("toast");
+                toast.style.left = x + "px";
+                toast.style.top = y + "px";
+                toast.classList.add("show");
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(
+                    () => toast.classList.remove("show"),
+                    1000,
+                );
+            }
+
+            // Debounce
+            let debounceTimer = null;
+            function debouncedSearch() {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(searchBible, 300);
+            }
+
+            // Initialize
+            window.onload = async () => {
+                const statusEl = document.getElementById("status");
+
+                statusEl.textContent = "성경 데이터 다운로드 중... (약 6MB)";
+
+                try {
+                    const response = await fetch(BIBLE_URL);
+                    if (!response.ok) throw new Error("네트워크 오류");
+
+                    bibleData = await response.json();
+                    isDataLoaded = true;
+
+                    statusEl.textContent = "";
+
+                    document.getElementById("searchInput").focus();
+                } catch (error) {
+                    console.error(error);
+                    statusEl.textContent =
+                        "데이터 로드 실패. 새로고침 해주세요.";
+                    statusEl.style.color = "red";
+                }
+            };
+
+            function searchBible() {
+                if (!isDataLoaded) return;
+
+                const input = document
+                    .getElementById("searchInput")
+                    .value.trim();
+                if (!input) return;
+
+                closeExpandPanel();
+                currentQuery = input;
+
+                const searchResult = performSearch(input);
+                currentResults = searchResult.data;
+                currentIsReference = searchResult.isReference;
+
+                const list = document.getElementById("resultList");
+                const status = document.getElementById("status");
+                list.innerHTML = "";
+                currentRenderCount = 0;
+
+                if (currentResults.length === 0) {
+                    status.textContent = "검색 결과가 없습니다.";
+                    removeLoadMoreBtn();
+                    return;
                 }
 
-                li.appendChild(ref);
-                li.appendChild(content);
-                fragment.appendChild(li);
+                status.textContent = "";
+
+                if (currentIsReference) {
+                    renderBatch(currentResults.length);
+                } else {
+                    renderBatch(ITEMS_PER_PAGE);
+                }
             }
 
-            list.appendChild(fragment);
-            currentRenderCount = end;
+            function performSearch(query) {
+                const refRegex = /^([가-힣]+)\s*(\d+)(?:[:장]\s*(\d+))?.*$/;
+                const match = query.match(refRegex);
 
-            // Handle Load More Button
-            updateLoadMoreButton();
-        }
+                if (match) {
+                    let [, bookStr, chapterStr, verseStr] = match;
+                    let book = BOOK_MAP[bookStr] || bookStr;
+                    const chapter = parseInt(chapterStr, 10);
+                    const verse = verseStr ? parseInt(verseStr, 10) : null;
 
-        function updateLoadMoreButton() {
-            removeLoadMoreBtn();
+                    const data = bibleData.filter((item) => {
+                        if (item.book !== book) return false;
+                        if (item.chapter !== chapter) return false;
+                        if (verse && item.verse !== verse) return false;
+                        return true;
+                    });
 
-            if (currentRenderCount < currentResults.length) {
-                const list = document.getElementById('resultList');
-                const btnContainer = document.createElement('div');
-                btnContainer.id = "loadMoreContainer";
-                btnContainer.style.textAlign = 'center';
-                btnContainer.style.marginTop = '20px';
+                    return { data: data, isReference: true };
+                }
 
-                const btn = document.createElement('button');
-                btn.textContent = "더 보기";
-                btn.onclick = () => renderBatch(ITEMS_PER_PAGE);
-
-                btnContainer.appendChild(btn);
-                list.parentNode.insertBefore(btnContainer, list.nextSibling);
+                const data = bibleData.filter((item) =>
+                    item.content.includes(query),
+                );
+                return { data: data, isReference: false };
             }
-        }
 
-        function removeLoadMoreBtn() {
-            const existing = document.getElementById('loadMoreContainer');
-            if (existing) existing.remove();
-        }
-    </script>
+            function renderBatch(count) {
+                const list = document.getElementById("resultList");
+                const fragment = document.createDocumentFragment();
 
-</body>
+                const start = currentRenderCount;
+                const end = Math.min(start + count, currentResults.length);
 
+                for (let i = start; i < end; i++) {
+                    const item = currentResults[i];
+                    const li = document.createElement("li");
+                    li.className = "result-item";
+
+                    const ref = document.createElement("span");
+                    ref.className = "verse-ref";
+                    ref.textContent = `${item.book}${item.chapter}:${item.verse}`;
+
+                    const content = document.createElement("span");
+                    content.className = "verse-content";
+
+                    if (!currentIsReference) {
+                        const parts = item.content.split(currentQuery);
+                        const frag = document.createDocumentFragment();
+                        parts.forEach((part, idx) => {
+                            frag.appendChild(document.createTextNode(part));
+                            if (idx < parts.length - 1) {
+                                const mark = document.createElement("span");
+                                mark.className = "highlight";
+                                mark.textContent = currentQuery;
+                                frag.appendChild(mark);
+                            }
+                        });
+                        content.appendChild(frag);
+                    } else {
+                        content.textContent = item.content;
+                    }
+
+                    // Expand button
+                    const expandBtn = document.createElement("button");
+                    expandBtn.className = "expand-btn";
+                    expandBtn.textContent = "≡";
+                    expandBtn.title = "앞뒤 구절 보기";
+                    expandBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        openExpandPanel(item, li, expandBtn);
+                    };
+
+                    const inner = document.createElement("div");
+                    inner.className = "result-item-inner";
+                    const textWrap = document.createElement("div");
+                    textWrap.className = "result-item-text";
+                    textWrap.appendChild(ref);
+                    textWrap.appendChild(content);
+                    inner.appendChild(textWrap);
+                    inner.appendChild(expandBtn);
+
+                    li.appendChild(inner);
+                    fragment.appendChild(li);
+                }
+
+                list.appendChild(fragment);
+                currentRenderCount = end;
+
+                updateLoadMoreButton();
+            }
+
+            function updateLoadMoreButton() {
+                removeLoadMoreBtn();
+
+                if (currentRenderCount < currentResults.length) {
+                    const list = document.getElementById("resultList");
+                    const btnContainer = document.createElement("div");
+                    btnContainer.id = "loadMoreContainer";
+                    btnContainer.style.textAlign = "center";
+                    btnContainer.style.marginTop = "20px";
+
+                    const btn = document.createElement("button");
+                    btn.textContent = "더 보기";
+                    btn.onclick = () => renderBatch(ITEMS_PER_PAGE);
+
+                    btnContainer.appendChild(btn);
+                    list.parentNode.insertBefore(
+                        btnContainer,
+                        list.nextSibling,
+                    );
+                }
+            }
+
+            function removeLoadMoreBtn() {
+                const existing = document.getElementById("loadMoreContainer");
+                if (existing) existing.remove();
+            }
+
+            // ── Inline Expand Panel ──────────────────────────────────────
+            const EXPAND_BATCH = 30;
+            let activePanel = null; // { li, panel, btn, observer }
+
+            function closeExpandPanel() {
+                if (!activePanel) return;
+                if (activePanel.observer) activePanel.observer.disconnect();
+                activePanel.panel.remove();
+                activePanel.btn.classList.remove("active");
+                activePanel.btn.textContent = "≡";
+                activePanel = null;
+            }
+
+            function openExpandPanel(item, li, btn) {
+                // Toggle if same row
+                if (activePanel && activePanel.li === li) {
+                    closeExpandPanel();
+                    return;
+                }
+                closeExpandPanel();
+
+                const originIdx = bibleData.findIndex(
+                    (v) =>
+                        v.book === item.book &&
+                        v.chapter === item.chapter &&
+                        v.verse === item.verse,
+                );
+                if (originIdx === -1) return;
+
+                let curTopIdx = Math.max(0, originIdx - EXPAND_BATCH);
+                let curBottomIdx = Math.min(
+                    bibleData.length - 1,
+                    originIdx + EXPAND_BATCH,
+                );
+
+                // Build panel DOM
+                const panel = document.createElement("div");
+                panel.className = "expand-panel";
+
+                const header = document.createElement("div");
+                header.className = "expand-panel-header";
+                const title = document.createElement("span");
+                title.className = "expand-panel-title";
+                title.textContent = `${item.book} ${item.chapter}:${item.verse}`;
+                const closeBtn = document.createElement("button");
+                closeBtn.className = "expand-close-btn";
+                closeBtn.textContent = "✕";
+                closeBtn.onclick = closeExpandPanel;
+                header.appendChild(title);
+                header.appendChild(closeBtn);
+                panel.appendChild(header);
+
+                const scroll = document.createElement("div");
+                scroll.className = "expand-scroll";
+
+                const topSentinel = document.createElement("div");
+                topSentinel.className = "expand-sentinel";
+                const versesContainer = document.createElement("div");
+                versesContainer.className = "expand-verses";
+                const bottomSentinel = document.createElement("div");
+                bottomSentinel.className = "expand-sentinel";
+
+                scroll.appendChild(topSentinel);
+                scroll.appendChild(versesContainer);
+                scroll.appendChild(bottomSentinel);
+                panel.appendChild(scroll);
+
+                li.appendChild(panel);
+
+                // Render initial batch
+                for (let i = curTopIdx; i <= curBottomIdx; i++) {
+                    versesContainer.appendChild(
+                        makeModalVerse(bibleData[i], i === originIdx),
+                    );
+                }
+
+                // Scroll to origin verse within the panel
+                const originEl = versesContainer.querySelector(".origin");
+                if (originEl) {
+                    requestAnimationFrame(() => {
+                        scroll.scrollTop =
+                            originEl.offsetTop -
+                            scroll.clientHeight / 2 +
+                            originEl.offsetHeight / 2;
+                    });
+                }
+
+                // Update button appearance
+                btn.classList.add("active");
+                btn.textContent = "▲";
+
+                // Infinite scroll via IntersectionObserver
+                const observer = new IntersectionObserver(
+                    (entries) => {
+                        entries.forEach((entry) => {
+                            if (!entry.isIntersecting) return;
+
+                            if (entry.target === topSentinel && curTopIdx > 0) {
+                                const newTop = Math.max(0, curTopIdx - EXPAND_BATCH);
+                                const frag = document.createDocumentFragment();
+                                for (let i = newTop; i < curTopIdx; i++) {
+                                    frag.appendChild(
+                                        makeModalVerse(bibleData[i], i === originIdx),
+                                    );
+                                }
+                                const prevHeight = versesContainer.scrollHeight;
+                                versesContainer.insertBefore(frag, versesContainer.firstChild);
+                                scroll.scrollTop += versesContainer.scrollHeight - prevHeight;
+                                curTopIdx = newTop;
+                            }
+
+                            if (
+                                entry.target === bottomSentinel &&
+                                curBottomIdx < bibleData.length - 1
+                            ) {
+                                const newBottom = Math.min(
+                                    bibleData.length - 1,
+                                    curBottomIdx + EXPAND_BATCH,
+                                );
+                                const frag = document.createDocumentFragment();
+                                for (let i = curBottomIdx + 1; i <= newBottom; i++) {
+                                    frag.appendChild(
+                                        makeModalVerse(bibleData[i], i === originIdx),
+                                    );
+                                }
+                                versesContainer.appendChild(frag);
+                                curBottomIdx = newBottom;
+                            }
+                        });
+                    },
+                    { root: scroll, threshold: 0 },
+                );
+
+                observer.observe(topSentinel);
+                observer.observe(bottomSentinel);
+
+                activePanel = { li, panel, btn, observer };
+
+                // Attach drag-select to this panel
+                setupPanelDragSelect(versesContainer, scroll);
+            }
+
+            // ── Verse factory ────────────────────────────────────────────
+            function makeModalVerse(item, isOrigin) {
+                const div = document.createElement("div");
+                div.className = "modal-verse" + (isOrigin ? " origin" : "");
+                div.dataset.book = item.book;
+                div.dataset.chapter = item.chapter;
+                div.dataset.verse = item.verse;
+                div.dataset.content = item.content;
+                div.onclick = async (e) => {
+                    if (dragSelecting) return; // handled by drag-select
+                    const text = buildObsidianText([item]);
+                    let copied = false;
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        copied = true;
+                    } catch (err) {
+                        try {
+                            const ta = document.createElement("textarea");
+                            ta.value = text;
+                            ta.style.position = "fixed";
+                            ta.style.opacity = "0";
+                            document.body.appendChild(ta);
+                            ta.focus();
+                            ta.select();
+                            ta.setSelectionRange(0, ta.value.length);
+                            copied = document.execCommand("copy");
+                            document.body.removeChild(ta);
+                        } catch (e2) {}
+                    }
+                    if (copied) {
+                        div.classList.add("copied");
+                        setTimeout(() => div.classList.remove("copied"), 1200);
+                        showToast(e.clientX, e.clientY);
+                    }
+                };
+                const ref = document.createElement("span");
+                ref.className = "verse-ref";
+                ref.textContent = `${item.book}${item.chapter}:${item.verse}`;
+                const content = document.createElement("span");
+                content.className = "verse-content";
+                content.textContent = item.content;
+                div.appendChild(ref);
+                div.appendChild(content);
+                return div;
+            }
+
+            // ── Drag-select (per panel) ──────────────────────────────────
+            let dragSelecting = false;
+            let dragStartVerse = null;
+            let dragSelected = new Set();
+            let dragScrollEl = null;
+            let longPressTimer = null;
+            let longPressActive = false;
+
+            function clearDragSelection() {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                longPressActive = false;
+                dragSelected.forEach((el) => el.classList.remove("sel-active"));
+                dragSelected.clear();
+                dragStartVerse = null;
+                dragSelecting = false;
+                if (dragScrollEl) {
+                    dragScrollEl.classList.remove("selecting");
+                    dragScrollEl = null;
+                }
+            }
+
+            // Sync copy — must stay synchronous to preserve user gesture context
+            function copySelection(verses, clientX, clientY) {
+                const items = verses.map((div) => ({
+                    book: div.dataset.book,
+                    chapter: parseInt(div.dataset.chapter),
+                    verse: parseInt(div.dataset.verse),
+                    content: div.dataset.content,
+                }));
+                const text = buildObsidianText(items);
+
+                let copied = false;
+                try {
+                    const ta = document.createElement("textarea");
+                    ta.value = text;
+                    ta.style.cssText =
+                        "position:fixed;top:0;left:0;width:1px;height:1px;opacity:0.01;";
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    ta.setSelectionRange(0, text.length);
+                    copied = document.execCommand("copy");
+                    document.body.removeChild(ta);
+                } catch (e) {}
+
+                // Also attempt modern clipboard (best-effort, non-blocking)
+                if (navigator.clipboard)
+                    navigator.clipboard.writeText(text).catch(() => {});
+
+                if (copied) {
+                    verses.forEach((div) => {
+                        div.classList.add("copied");
+                        setTimeout(() => div.classList.remove("copied"), 1200);
+                    });
+                    showToast(clientX, clientY);
+                }
+            }
+
+            function setupPanelDragSelect(versesContainer, scroll) {
+                // Returns all verse elements in DOM order
+                function getVerses() {
+                    return Array.from(
+                        versesContainer.querySelectorAll(".modal-verse"),
+                    );
+                }
+
+                // Select the contiguous range from dragStartVerse to toEl
+                function selectRange(toEl) {
+                    if (!dragStartVerse) return;
+                    const verses = getVerses();
+                    const fromIdx = verses.indexOf(dragStartVerse);
+                    const toIdx = verses.indexOf(toEl);
+                    if (fromIdx === -1 || toIdx === -1) return;
+
+                    const [start, end] =
+                        fromIdx <= toIdx
+                            ? [fromIdx, toIdx]
+                            : [toIdx, fromIdx];
+
+                    // Recompute entire selection from scratch each move
+                    dragSelected.forEach((el) =>
+                        el.classList.remove("sel-active"),
+                    );
+                    dragSelected.clear();
+                    for (let i = start; i <= end; i++) {
+                        dragSelected.add(verses[i]);
+                        verses[i].classList.add("sel-active");
+                    }
+                }
+
+                // ── Mouse ─────────────────────────────────────────────
+                versesContainer.addEventListener("mousedown", (e) => {
+                    const verse = e.target.closest(".modal-verse");
+                    if (!verse) return;
+                    clearDragSelection();
+                    dragStartVerse = verse;
+                    dragScrollEl = scroll;
+                });
+
+                versesContainer.addEventListener("mousemove", (e) => {
+                    if (!dragStartVerse || e.buttons !== 1) return;
+                    const verse = e.target.closest(".modal-verse");
+                    if (!verse || verse === dragStartVerse) return;
+
+                    if (!dragSelecting) {
+                        dragSelecting = true;
+                        scroll.classList.add("selecting");
+                    }
+                    selectRange(verse);
+                });
+
+                versesContainer.addEventListener("mouseup", (e) => {
+                    if (!dragSelecting || dragSelected.size < 2) {
+                        clearDragSelection();
+                        return;
+                    }
+                    const verses = Array.from(dragSelected);
+                    clearDragSelection();
+                    copySelection(verses, e.clientX, e.clientY);
+                });
+
+                // ── Touch — long-press to start, then drag ─────────────
+                versesContainer.addEventListener(
+                    "touchstart",
+                    (e) => {
+                        const verse = e.target.closest(".modal-verse");
+                        if (!verse) return;
+                        clearDragSelection();
+                        dragStartVerse = verse;
+                        dragScrollEl = scroll;
+                        longPressTimer = setTimeout(() => {
+                            longPressActive = true;
+                            dragSelecting = true;
+                            scroll.classList.add("selecting");
+                            selectRange(verse);
+                            if (navigator.vibrate) navigator.vibrate(30);
+                        }, 200);
+                    },
+                    { passive: true },
+                );
+
+                versesContainer.addEventListener(
+                    "touchmove",
+                    (e) => {
+                        if (!dragStartVerse) return;
+                        if (!longPressActive) {
+                            clearTimeout(longPressTimer);
+                            longPressTimer = null;
+                            dragStartVerse = null;
+                            return;
+                        }
+                        e.preventDefault();
+                        const touch = e.touches[0];
+                        const el = document.elementFromPoint(
+                            touch.clientX,
+                            touch.clientY,
+                        );
+                        const verse = el && el.closest(".modal-verse");
+                        if (verse) selectRange(verse);
+                    },
+                    { passive: false },
+                );
+
+                versesContainer.addEventListener("touchend", (e) => {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                    if (!dragSelecting || dragSelected.size < 2) {
+                        clearDragSelection();
+                        return;
+                    }
+                    const touch = e.changedTouches[0];
+                    const verses = Array.from(dragSelected);
+                    clearDragSelection();
+                    copySelection(verses, touch.clientX, touch.clientY);
+                });
+            }
+
+            // Clear drag selection when clicking outside any panel
+            document.addEventListener("mousedown", (e) => {
+                if (!e.target.closest(".expand-verses")) {
+                    clearDragSelection();
+                }
+            });
+        </script>
+    </body>
 </html>
