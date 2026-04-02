@@ -1,7 +1,9 @@
 const CACHE_NAME = "bible-web-v2";
 const ASSETS_TO_CACHE = [
     "./index.html",
+    "./manifest.webmanifest",
     "./bible_structured.json",
+    "./app-icon.png",
     "./favicon.png",
 ];
 

@@ -1,0 +1,16 @@
+{
+  "name": "바이블-웹",
+  "short_name": "바이블-웹",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f0e8d8",
+  "theme_color": "#f0e8d8",
+  "icons": [
+    {
+      "src": "./app-icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
