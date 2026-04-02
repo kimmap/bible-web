@@ -15,7 +15,6 @@
                 --border: #e2e8f0;
                 --border-light: #f1f5f9;
                 --hover-bg: #f8fafc;
-                --panel-header-bg: #f1f5f9;
                 --expand-btn-bg: #e2e8f0;
                 --expand-btn-color: #475569;
                 --expand-btn-hover: #cbd5e1;
@@ -23,7 +22,6 @@
                 --origin-bg: #eff6ff;
                 --copied-bg: #dcfce7;
                 --sel-bg: #dbeafe;
-                --close-btn-color: #94a3b8;
                 --shadow: rgba(0, 0, 0, 0.1);
                 --primary-hover: #2563eb;
                 --toast-bg: #16a34a;
@@ -39,7 +37,6 @@
                     --border: #334155;
                     --border-light: #1e293b;
                     --hover-bg: #263348;
-                    --panel-header-bg: #162032;
                     --expand-btn-bg: #334155;
                     --expand-btn-color: #94a3b8;
                     --expand-btn-hover: #475569;
@@ -47,7 +44,6 @@
                     --origin-bg: #1e3a5f;
                     --copied-bg: #14532d;
                     --sel-bg: #1e3a5f;
-                    --close-btn-color: #64748b;
                     --shadow: rgba(0, 0, 0, 0.4);
                     --primary-hover: #3b82f6;
                     --toast-bg: #16a34a;
@@ -224,39 +220,6 @@
                 box-shadow: 0 8px 24px var(--shadow);
             }
 
-            .expand-panel-header {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                padding: 8px 16px;
-                background: var(--panel-header-bg);
-                border-bottom: 1px solid var(--border);
-                position: sticky;
-                top: 0;
-                z-index: 1;
-            }
-
-            .expand-panel-title {
-                font-weight: 700;
-                font-size: 13px;
-                color: var(--primary-color);
-            }
-
-            .expand-close-btn {
-                background: none;
-                border: none;
-                font-size: 16px;
-                cursor: pointer;
-                color: var(--close-btn-color);
-                padding: 0 4px;
-                line-height: 1;
-                font-weight: 400;
-            }
-
-            .expand-close-btn:hover {
-                background: none;
-                color: var(--text-main);
-            }
 
             .expand-scroll {
                 max-height: 70vh;
@@ -752,19 +715,6 @@
                 // Build panel DOM
                 const panel = document.createElement("div");
                 panel.className = "expand-panel";
-
-                const header = document.createElement("div");
-                header.className = "expand-panel-header";
-                const title = document.createElement("span");
-                title.className = "expand-panel-title";
-                title.textContent = `${item.book} ${item.chapter}:${item.verse}`;
-                const closeBtn = document.createElement("button");
-                closeBtn.className = "expand-close-btn";
-                closeBtn.textContent = "✕";
-                closeBtn.onclick = closeExpandPanel;
-                header.appendChild(title);
-                header.appendChild(closeBtn);
-                panel.appendChild(header);
 
                 const scroll = document.createElement("div");
                 scroll.className = "expand-scroll";
