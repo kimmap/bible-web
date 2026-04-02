@@ -215,43 +215,13 @@
                 background-color: var(--hover-bg);
             }
 
+            .result-item.active {
+                background-color: var(--sel-bg);
+                box-shadow: inset 4px 0 0 var(--primary-color);
+            }
+
             .result-item-inner {
-                display: flex;
-                align-items: flex-start;
-                justify-content: space-between;
-                gap: 8px;
-            }
-
-            .result-item-text {
-                flex: 1;
-                min-width: 0;
-            }
-
-            .expand-btn {
-                flex-shrink: 0;
-                padding: 6px 14px;
-                background: var(--expand-btn-bg);
-                color: var(--expand-btn-color);
-                font-size: 14px;
-                font-weight: 600;
-                border-radius: 6px;
-                cursor: pointer;
-                border: none;
-                line-height: 1.5;
-                transition: background 0.15s, color 0.15s;
-            }
-
-            .expand-btn:hover {
-                background: var(--expand-btn-hover);
-            }
-
-            .expand-btn.active {
-                background: var(--primary-color);
-                color: #fff;
-            }
-
-            .expand-btn.active:hover {
-                background: var(--primary-hover);
+                display: block;
             }
 
             /* Overlay expand panel */
@@ -1321,16 +1291,6 @@
                         content.textContent = item.content;
                     }
 
-                    // Expand button
-                    const expandBtn = document.createElement("button");
-                    expandBtn.className = "expand-btn";
-                    expandBtn.textContent = "≡";
-                    expandBtn.title = "앞뒤 구절 보기";
-                    expandBtn.onclick = (e) => {
-                        e.stopPropagation();
-                        openExpandPanel(item, li, expandBtn);
-                    };
-
                     const inner = document.createElement("div");
                     inner.className = "result-item-inner";
                     const textWrap = document.createElement("div");
@@ -1338,14 +1298,17 @@
                     textWrap.appendChild(ref);
                     textWrap.appendChild(content);
                     inner.appendChild(textWrap);
-                    inner.appendChild(expandBtn);
 
                     li.appendChild(inner);
+
+                    if (currentMode !== 'transcription') {
+                        li.style.cursor = "pointer";
+                        li.onclick = () => openExpandPanel(item, li);
+                    }
 
                     if (currentMode === 'transcription') {
                         // 좌측 셀
                         li.classList.add('left-cell');
-                        expandBtn.style.display = 'none';
 
                         // 모든 브라우저에서 TTS 버튼 추가
                         if (window.speechSynthesis) {
@@ -1469,18 +1432,17 @@
 
             // ── Inline Expand Panel ──────────────────────────────────────
             const EXPAND_BATCH = 30;
-            let activePanel = null; // { li, panel, btn, observer }
+            let activePanel = null; // { li, panel, observer }
 
             function closeExpandPanel() {
                 if (!activePanel) return;
                 if (activePanel.observer) activePanel.observer.disconnect();
                 activePanel.panel.remove();
-                activePanel.btn.classList.remove("active");
-                activePanel.btn.textContent = "≡";
+                activePanel.li.classList.remove("active");
                 activePanel = null;
             }
 
-            function openExpandPanel(item, li, btn) {
+            function openExpandPanel(item, li) {
                 // Toggle if same row
                 if (activePanel && activePanel.li === li) {
                     closeExpandPanel();
@@ -1541,9 +1503,7 @@
                     });
                 }
 
-                // Update button appearance
-                btn.classList.add("active");
-                btn.textContent = "▲";
+                li.classList.add("active");
 
                 // Infinite scroll via IntersectionObserver
                 const observer = new IntersectionObserver(
@@ -1590,7 +1550,7 @@
                 observer.observe(topSentinel);
                 observer.observe(bottomSentinel);
 
-                activePanel = { li, panel, btn, observer };
+                activePanel = { li, panel, observer };
 
                 // Attach drag-select to this panel
                 setupPanelDragSelect(versesContainer, scroll);
