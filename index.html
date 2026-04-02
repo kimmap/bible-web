@@ -242,6 +242,9 @@
                 max-height: 70vh;
                 overflow-y: auto;
                 background: var(--card-bg);
+                -webkit-overflow-scrolling: touch;
+                -webkit-touch-callout: none;
+                touch-action: pan-y;
             }
 
             .expand-sentinel {
@@ -258,6 +261,10 @@
                 padding: 12px 16px;
                 border-bottom: 1px solid var(--border-light);
                 cursor: pointer;
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                user-select: none;
+                touch-action: pan-y;
             }
 
             .modal-verse:hover {
@@ -1303,7 +1310,10 @@
 
                     if (currentMode !== 'transcription') {
                         li.style.cursor = "pointer";
-                        li.onclick = () => openExpandPanel(item, li);
+                        li.onclick = (e) => {
+                            if (e.target instanceof Element && e.target.closest(".expand-panel")) return;
+                            openExpandPanel(item, li);
+                        };
                     }
 
                     if (currentMode === 'transcription') {
@@ -1436,6 +1446,8 @@
 
             function closeExpandPanel() {
                 if (!activePanel) return;
+                clearDragSelection();
+                dragContext = null;
                 if (activePanel.observer) activePanel.observer.disconnect();
                 activePanel.panel.remove();
                 activePanel.li.classList.remove("active");
@@ -1565,7 +1577,8 @@
                 div.dataset.verse = item.verse;
                 div.dataset.content = item.content;
                 div.onclick = async (e) => {
-                    if (dragSelecting) return; // handled by drag-select
+                    e.stopPropagation();
+                    if (dragSelecting || suppressNextVerseClick) return; // handled by drag-select
                     const text = buildObsidianText([item]);
                     let copied = false;
                     try {
@@ -1609,11 +1622,17 @@
             let dragScrollEl = null;
             let longPressTimer = null;
             let longPressActive = false;
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let suppressNextVerseClick = false;
+            let dragContext = null;
 
             function clearDragSelection() {
                 clearTimeout(longPressTimer);
                 longPressTimer = null;
                 longPressActive = false;
+                touchStartX = 0;
+                touchStartY = 0;
                 dragSelected.forEach((el) => el.classList.remove("sel-active"));
                 dragSelected.clear();
                 dragStartVerse = null;
@@ -1621,6 +1640,31 @@
                 if (dragScrollEl) {
                     dragScrollEl.classList.remove("selecting");
                     dragScrollEl = null;
+                }
+            }
+
+            function getDragVerses() {
+                if (!dragContext) return [];
+                return Array.from(
+                    dragContext.versesContainer.querySelectorAll(".modal-verse"),
+                );
+            }
+
+            function selectRange(toEl) {
+                if (!dragStartVerse || !dragContext) return;
+                const verses = getDragVerses();
+                const fromIdx = verses.indexOf(dragStartVerse);
+                const toIdx = verses.indexOf(toEl);
+                if (fromIdx === -1 || toIdx === -1) return;
+
+                const [start, end] =
+                    fromIdx <= toIdx ? [fromIdx, toIdx] : [toIdx, fromIdx];
+
+                dragSelected.forEach((el) => el.classList.remove("sel-active"));
+                dragSelected.clear();
+                for (let i = start; i <= end; i++) {
+                    dragSelected.add(verses[i]);
+                    verses[i].classList.add("sel-active");
                 }
             }
 
@@ -1633,6 +1677,14 @@
                     content: div.dataset.content,
                 }));
                 const text = buildObsidianText(items);
+
+                const applyCopiedFeedback = () => {
+                    verses.forEach((div) => {
+                        div.classList.add("copied");
+                        setTimeout(() => div.classList.remove("copied"), 1200);
+                    });
+                    showToast(clientX, clientY);
+                };
 
                 let copied = false;
                 try {
@@ -1648,91 +1700,47 @@
                     document.body.removeChild(ta);
                 } catch (e) {}
 
-                // Also attempt modern clipboard (best-effort, non-blocking)
-                if (navigator.clipboard)
-                    navigator.clipboard.writeText(text).catch(() => {});
-
                 if (copied) {
-                    verses.forEach((div) => {
-                        div.classList.add("copied");
-                        setTimeout(() => div.classList.remove("copied"), 1200);
-                    });
-                    showToast(clientX, clientY);
+                    applyCopiedFeedback();
+                    return;
+                }
+
+                // Also attempt modern clipboard as a fallback for mobile browsers
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(text)
+                        .then(() => {
+                            applyCopiedFeedback();
+                        })
+                        .catch(() => {});
                 }
             }
 
             function setupPanelDragSelect(versesContainer, scroll) {
-                // Returns all verse elements in DOM order
-                function getVerses() {
-                    return Array.from(
-                        versesContainer.querySelectorAll(".modal-verse"),
-                    );
-                }
+                dragContext = { versesContainer, scroll };
 
-                // Select the contiguous range from dragStartVerse to toEl
-                function selectRange(toEl) {
-                    if (!dragStartVerse) return;
-                    const verses = getVerses();
-                    const fromIdx = verses.indexOf(dragStartVerse);
-                    const toIdx = verses.indexOf(toEl);
-                    if (fromIdx === -1 || toIdx === -1) return;
-
-                    const [start, end] =
-                        fromIdx <= toIdx
-                            ? [fromIdx, toIdx]
-                            : [toIdx, fromIdx];
-
-                    // Recompute entire selection from scratch each move
-                    dragSelected.forEach((el) =>
-                        el.classList.remove("sel-active"),
-                    );
-                    dragSelected.clear();
-                    for (let i = start; i <= end; i++) {
-                        dragSelected.add(verses[i]);
-                        verses[i].classList.add("sel-active");
-                    }
-                }
-
-                // ── Mouse ─────────────────────────────────────────────
                 versesContainer.addEventListener("mousedown", (e) => {
-                    const verse = e.target.closest(".modal-verse");
+                    if (e.button !== 0) return;
+                    const target = e.target instanceof Element ? e.target : null;
+                    const verse = target && target.closest(".modal-verse");
                     if (!verse) return;
                     clearDragSelection();
                     dragStartVerse = verse;
                     dragScrollEl = scroll;
                 });
 
-                versesContainer.addEventListener("mousemove", (e) => {
-                    if (!dragStartVerse || e.buttons !== 1) return;
-                    const verse = e.target.closest(".modal-verse");
-                    if (!verse || verse === dragStartVerse) return;
-
-                    if (!dragSelecting) {
-                        dragSelecting = true;
-                        scroll.classList.add("selecting");
-                    }
-                    selectRange(verse);
-                });
-
-                versesContainer.addEventListener("mouseup", (e) => {
-                    if (!dragSelecting || dragSelected.size < 2) {
-                        clearDragSelection();
-                        return;
-                    }
-                    const verses = Array.from(dragSelected);
-                    clearDragSelection();
-                    copySelection(verses, e.clientX, e.clientY);
-                });
-
-                // ── Touch — long-press to start, then drag ─────────────
                 versesContainer.addEventListener(
                     "touchstart",
                     (e) => {
-                        const verse = e.target.closest(".modal-verse");
+                        const target =
+                            e.target instanceof Element ? e.target : null;
+                        const verse = target && target.closest(".modal-verse");
                         if (!verse) return;
                         clearDragSelection();
                         dragStartVerse = verse;
                         dragScrollEl = scroll;
+                        const touch = e.touches[0];
+                        touchStartX = touch.clientX;
+                        touchStartY = touch.clientY;
                         longPressTimer = setTimeout(() => {
                             longPressActive = true;
                             dragSelecting = true;
@@ -1743,46 +1751,90 @@
                     },
                     { passive: true },
                 );
+            }
 
-                versesContainer.addEventListener(
-                    "touchmove",
-                    (e) => {
-                        if (!dragStartVerse) return;
-                        if (!longPressActive) {
-                            clearTimeout(longPressTimer);
-                            longPressTimer = null;
-                            dragStartVerse = null;
-                            return;
-                        }
-                        e.preventDefault();
+            document.addEventListener("mousemove", (e) => {
+                if (!dragStartVerse || e.buttons !== 1 || !dragContext) return;
+                const target = e.target instanceof Element ? e.target : null;
+                const verse = target && target.closest(".modal-verse");
+                if (!verse || verse === dragStartVerse) return;
+
+                if (!dragSelecting) {
+                    dragSelecting = true;
+                    dragContext.scroll.classList.add("selecting");
+                }
+                selectRange(verse);
+            });
+
+            document.addEventListener("mouseup", (e) => {
+                if (!dragStartVerse) return;
+                if (!dragSelecting || dragSelected.size < 2) {
+                    clearDragSelection();
+                    return;
+                }
+                suppressNextVerseClick = true;
+                setTimeout(() => {
+                    suppressNextVerseClick = false;
+                }, 350);
+                const verses = Array.from(dragSelected);
+                clearDragSelection();
+                copySelection(verses, e.clientX, e.clientY);
+            });
+
+            document.addEventListener(
+                "touchmove",
+                (e) => {
+                    if (!dragStartVerse || !dragContext) return;
+                    if (!longPressActive) {
                         const touch = e.touches[0];
-                        const el = document.elementFromPoint(
-                            touch.clientX,
-                            touch.clientY,
-                        );
-                        const verse = el && el.closest(".modal-verse");
-                        if (verse) selectRange(verse);
-                    },
-                    { passive: false },
-                );
-
-                versesContainer.addEventListener("touchend", (e) => {
-                    clearTimeout(longPressTimer);
-                    longPressTimer = null;
-                    if (!dragSelecting || dragSelected.size < 2) {
-                        clearDragSelection();
+                        const dx = Math.abs(touch.clientX - touchStartX);
+                        const dy = Math.abs(touch.clientY - touchStartY);
+                        // Ignore small finger jitter so long-press can still arm on iOS.
+                        if (dx < 10 && dy < 10) return;
+                        clearTimeout(longPressTimer);
+                        longPressTimer = null;
+                        dragStartVerse = null;
+                        touchStartX = 0;
+                        touchStartY = 0;
                         return;
                     }
-                    const touch = e.changedTouches[0];
-                    const verses = Array.from(dragSelected);
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const el = document.elementFromPoint(
+                        touch.clientX,
+                        touch.clientY,
+                    );
+                    const verse = el && el.closest(".modal-verse");
+                    if (verse) selectRange(verse);
+                },
+                { passive: false },
+            );
+
+            document.addEventListener("touchend", (e) => {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
+                if (!dragSelecting || dragSelected.size < 2) {
                     clearDragSelection();
-                    copySelection(verses, touch.clientX, touch.clientY);
-                });
-            }
+                    return;
+                }
+                suppressNextVerseClick = true;
+                setTimeout(() => {
+                    suppressNextVerseClick = false;
+                }, 350);
+                const touch = e.changedTouches[0];
+                const verses = Array.from(dragSelected);
+                clearDragSelection();
+                copySelection(verses, touch.clientX, touch.clientY);
+            });
+
+            document.addEventListener("touchcancel", () => {
+                clearDragSelection();
+            });
 
             // Clear drag selection when clicking outside any panel
             document.addEventListener("mousedown", (e) => {
-                if (!e.target.closest(".expand-verses")) {
+                const target = e.target instanceof Element ? e.target : null;
+                if (!target || !target.closest(".expand-verses")) {
                     clearDragSelection();
                 }
             });
