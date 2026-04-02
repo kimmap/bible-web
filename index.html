@@ -513,10 +513,10 @@
                 /* 외부 컨테이너 border 제거 → 카드형 레이아웃 허용 */
                 body.transcription-mode #resultList {
                     grid-template-columns: 1fr;
+                    gap: 0;
                     border: none;
                     border-radius: 0;
                     overflow: visible;
-                    gap: 8px;
                 }
                 /* 원문 셀: 카드 상단 */
                 .result-item.left-cell {
@@ -534,6 +534,7 @@
                     border-top: none;
                     border-radius: 0 0 8px 8px;
                     padding: 8px 12px 10px;
+                    margin-bottom: 8px;
                 }
                 /* 텍스트에어리어 최소 높이 */
                 .transcription-textarea {
@@ -661,6 +662,15 @@
                 .font-size-controls,
                 .mode-tabs {
                     display: none;
+                }
+                .cover-controls {
+                    flex-wrap: wrap;
+                    gap: 6px 10px;
+                }
+                .cover-hint {
+                    width: 100%;
+                    font-size: 11px;
+                    line-height: 1.4;
                 }
 
                 /* 바텀 네비 바 */
@@ -896,7 +906,6 @@
             const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
             let ttsCurrentBtn = null;
-            let ttsCurrentUtterance = null;
 
             function getBestKoreanVoice() {
                 const voices = window.speechSynthesis.getVoices();
@@ -944,7 +953,6 @@
                     if (ttsCurrentBtn === btn) ttsCurrentBtn = null;
                 };
 
-                ttsCurrentUtterance = utterance;
                 synth.speak(utterance);
             }
 
