@@ -7,6 +7,69 @@
 
 이 프로젝트는 정적 웹 호스팅(GitHub Pages 등)에 배포하여 누구나 무료로 사용할 수 있습니다.
 
+## ☁️ Cloudflare Pages로 배포하기
+
+이 프로젝트는 백엔드가 없는 정적 웹앱이므로 Cloudflare Pages에 바로 올리기 좋습니다.
+
+### 장점
+
+- `*.pages.dev` 무료 HTTPS 주소를 바로 사용할 수 있습니다.
+- 별도 서버를 계속 띄워둘 필요가 없습니다.
+- `sw.js`와 `bible_structured.json` 같은 정적 파일이 그대로 동작합니다.
+
+### 배포 절차
+
+1. GitHub 저장소를 Cloudflare Pages에 연결합니다.
+2. 빌드 설정은 정적 사이트 기준으로 둡니다.
+   - Build command: 비워두거나 `exit 0`
+   - Build output directory: 저장소 루트
+3. 첫 배포가 끝나면 `프로젝트명.pages.dev` 주소로 접속합니다.
+4. 필요하면 나중에 커스텀 도메인을 연결하고, Cloudflare가 HTTPS 인증서를 자동으로 관리하게 둡니다.
+
+### 로컬 확인
+
+로컬에서만 확인할 때는 아래처럼 임시 서버를 띄워도 됩니다.
+
+```bash
+python3 -m http.server 2323
+```
+
+이 명령은 개발용일 뿐이고, 운영 배포를 위해 항상 실행할 필요는 없습니다.
+
+### 참고
+
+- 서비스 워커는 `file://`로 직접 열면 정상 동작하지 않을 수 있으므로, 로컬 테스트도 `http://localhost` 또는 HTTPS 환경에서 하는 편이 안전합니다.
+- 이 저장소는 정적 호스팅만 필요하므로 Cloudflare Pages가 가장 간단한 선택입니다.
+
+## 🐙 GitHub Pages로 배포하기
+
+GitHub Pages도 이 프로젝트에 잘 맞습니다. 현재 구조는 정적 파일만으로 동작하므로 별도 빌드 단계가 필요 없습니다.
+
+### 권장 흐름
+
+1. GitHub에서 새 public 저장소를 하나 만듭니다.
+2. 현재 작업 디렉토리의 `origin`을 그 저장소로 바꿉니다.
+3. `main` 브랜치로 푸시합니다.
+4. GitHub 저장소 설정에서 Pages를 `Deploy from a branch`로 켭니다.
+5. Branch는 `main`, folder는 `/ (root)`로 둡니다.
+
+### 로컬에서 원격만 바꾸는 예시
+
+```bash
+git remote set-url origin https://github.com/<your-account>/<new-repo>.git
+git branch -M main
+git push -u origin main
+```
+
+### 왜 `.nojekyll`이 있나
+
+GitHub Pages는 Jekyll 처리를 거칠 수 있는데, 이 프로젝트는 순수 정적 파일 배포라서 `.nojekyll`을 두면 불필요한 처리 없이 그대로 서빙됩니다.
+
+### 주의
+
+- 이 저장소는 현재 `feat/tts` 브랜치에 있으므로, Pages 기본 브랜치를 `main`으로 맞추는 편이 가장 단순합니다.
+- 새 저장소를 만들면 기존 `origin`은 자동으로 따라가지 않으므로, 반드시 원격 URL을 새 레포로 바꿔야 합니다.
+
 ### 1. 설치 및 실행
 
 파일을 다운로드 받은 후 `index.html` 파일을 웹 브라우저로 열기만 하면 됩니다.
