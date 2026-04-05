@@ -27,6 +27,8 @@
                 --origin-bg: #eff6ff;
                 --copied-bg: #dcfce7;
                 --sel-bg: #dbeafe;
+                --result-active-bg: #ccfbf1;
+                --result-active-accent: #14b8a6;
                 --shadow: rgba(0, 0, 0, 0.1);
                 --primary-hover: #2563eb;
                 --toast-bg: #16a34a;
@@ -49,6 +51,8 @@
                     --origin-bg: #1e3a5f;
                     --copied-bg: #14532d;
                     --sel-bg: #1e3a5f;
+                    --result-active-bg: #134e4a;
+                    --result-active-accent: #2dd4bf;
                     --shadow: rgba(0, 0, 0, 0.4);
                     --primary-hover: #3b82f6;
                     --toast-bg: #16a34a;
@@ -71,6 +75,8 @@
                 --origin-bg: #ede0cc;
                 --copied-bg: #d4edcc;
                 --sel-bg: #ddd0ba;
+                --result-active-bg: #d7f5ef;
+                --result-active-accent: #0f766e;
                 --shadow: rgba(80, 50, 10, 0.15);
                 --primary-hover: #6b5235;
                 --toast-bg: #5a8a3a;
@@ -92,6 +98,8 @@
                 --origin-bg: #1e3a5f;
                 --copied-bg: #14532d;
                 --sel-bg: #1e3a5f;
+                --result-active-bg: #134e4a;
+                --result-active-accent: #2dd4bf;
                 --shadow: rgba(0, 0, 0, 0.4);
                 --primary-hover: #3b82f6;
                 --toast-bg: #16a34a;
@@ -104,9 +112,27 @@
                 background-color: var(--bg-color);
                 color: var(--text-main);
                 margin: 0;
-                padding: 20px;
+                padding: calc(20px + 70px + env(safe-area-inset-top)) 20px 20px;
                 display: flex;
                 justify-content: center;
+            }
+
+            /* ── 고정 검색 헤더 ─────────────────────────────────────── */
+            .search-header {
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 200;
+                background: var(--card-bg);
+                border-bottom: 1px solid var(--border);
+                box-shadow: 0 2px 8px var(--shadow);
+                padding: calc(10px + env(safe-area-inset-top)) 20px 10px;
+            }
+
+            .search-header .search-box {
+                max-width: 1400px;
+                margin: 0 auto;
             }
 
             .container {
@@ -120,18 +146,9 @@
                     0 2px 4px -1px rgba(0, 0, 0, 0.06);
             }
 
-            h1 {
-                text-align: center;
-                color: var(--text-main);
-                margin-bottom: 30px;
-                font-weight: 800;
-                font-size: 2rem;
-            }
-
             .search-box {
                 display: flex;
                 gap: 10px;
-                margin-bottom: 20px;
             }
 
             input[type="text"] {
@@ -216,21 +233,16 @@
             }
 
             .result-item.active {
-                background-color: var(--sel-bg);
-                box-shadow: inset 4px 0 0 var(--primary-color);
+                background-color: var(--result-active-bg);
+                box-shadow: inset 4px 0 0 var(--result-active-accent);
             }
 
             .result-item-inner {
                 display: block;
             }
 
-            /* Overlay expand panel */
+            /* Inline expand panel (sibling of sticky li) */
             .expand-panel {
-                position: absolute;
-                left: 0;
-                right: 0;
-                top: 100%;
-                z-index: 200;
                 background: var(--card-bg);
                 border: 1px solid var(--border);
                 border-top: none;
@@ -640,14 +652,13 @@
 
             @media (max-width: 767px) {
                 body {
-                    padding: 12px 10px calc(70px + env(safe-area-inset-bottom));
+                    padding: calc(12px + 62px + env(safe-area-inset-top)) 10px calc(70px + env(safe-area-inset-bottom));
+                }
+                .search-header {
+                    padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
                 }
                 .container {
                     padding: 16px 12px;
-                }
-                h1 {
-                    font-size: 1.4rem;
-                    margin-bottom: 14px;
                 }
                 .font-size-controls,
                 .mode-tabs {
@@ -772,9 +783,18 @@
     <body>
         <div id="toast">복사됨</div>
 
-        <div class="container">
-            <h1>바이블-웹</h1>
+        <div class="search-header">
+            <div class="search-box">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="예: 창 1장, 요 3:16, 태초에"
+                    oninput="debouncedSearch()"
+                />
+            </div>
+        </div>
 
+        <div class="container">
             <div class="font-size-controls">
                 <span class="font-size-label">글자 크기</span>
                 <button class="font-size-btn" onclick="changeFontSize(-1)">−</button>
@@ -784,15 +804,6 @@
                     <button class="theme-btn" data-theme="light" title="라이트 모드" onclick="applyTheme('light')">☀</button>
                     <button class="theme-btn" data-theme="dark" title="다크 모드" onclick="applyTheme('dark')">☾</button>
                 </div>
-            </div>
-
-            <div class="search-box">
-                <input
-                    type="text"
-                    id="searchInput"
-                    placeholder="예: 창 1장, 요 3:16, 태초에"
-                    oninput="debouncedSearch()"
-                />
             </div>
 
             <div class="mode-tabs">
@@ -1312,7 +1323,13 @@
                         li.style.cursor = "pointer";
                         li.onclick = (e) => {
                             if (e.target instanceof Element && e.target.closest(".expand-panel")) return;
+                            const isOpening = !(activePanel && activePanel.li === li);
                             openExpandPanel(item, li);
+                            if (isOpening) {
+                                requestAnimationFrame(() => {
+                                    li.scrollIntoView({ block: "start", behavior: "smooth" });
+                                });
+                            }
                         };
                     }
 
@@ -1450,7 +1467,11 @@
                 dragContext = null;
                 if (activePanel.observer) activePanel.observer.disconnect();
                 activePanel.panel.remove();
-                activePanel.li.classList.remove("active");
+                const li = activePanel.li;
+                li.classList.remove("active");
+                li.style.position = '';
+                li.style.top = '';
+                li.style.zIndex = '';
                 activePanel = null;
             }
 
@@ -1495,7 +1516,8 @@
                 scroll.appendChild(bottomSentinel);
                 panel.appendChild(scroll);
 
-                li.appendChild(panel);
+                // Insert panel as sibling after li (not inside li)
+                li.parentNode.insertBefore(panel, li.nextSibling);
 
                 // Render initial batch
                 for (let i = curTopIdx; i <= curBottomIdx; i++) {
@@ -1516,6 +1538,12 @@
                 }
 
                 li.classList.add("active");
+
+                // Stick li to top of viewport (below fixed search header)
+                const headerH = document.querySelector('.search-header').offsetHeight;
+                li.style.position = 'sticky';
+                li.style.top = headerH + 'px';
+                li.style.zIndex = '50';
 
                 // Infinite scroll via IntersectionObserver
                 const observer = new IntersectionObserver(
