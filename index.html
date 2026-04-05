@@ -263,7 +263,8 @@
                 height: 1px;
             }
 
-            .expand-scroll.selecting {
+            .expand-scroll.selecting,
+            .passage-view.selecting {
                 user-select: none;
                 -webkit-user-select: none;
             }
@@ -573,6 +574,77 @@
             .tts-btn:hover { background: var(--expand-btn-bg); color: var(--primary-color); }
             .tts-btn.speaking { color: var(--primary-color); background: var(--sel-bg); }
 
+            /* ── 검색 드롭다운 ─────────────────────────────────────── */
+            .search-dropdown {
+                display: none;
+                position: absolute;
+                top: 100%;
+                left: 0;
+                right: 0;
+                background: var(--card-bg);
+                border: 1px solid var(--border);
+                border-top: none;
+                box-shadow: 0 8px 32px var(--shadow);
+                max-height: 60vh;
+                overflow-y: auto;
+                z-index: 300;
+                -webkit-overflow-scrolling: touch;
+            }
+            .search-dropdown.open { display: block; }
+
+            .dropdown-meta {
+                padding: 8px 16px;
+                font-size: 12px;
+                color: var(--text-sub);
+                border-bottom: 1px solid var(--border-light);
+                background: var(--hover-bg);
+            }
+
+            .dropdown-item {
+                display: flex;
+                align-items: baseline;
+                gap: 10px;
+                padding: 10px 16px;
+                cursor: pointer;
+                border-bottom: 1px solid var(--border-light);
+                transition: background 0.1s;
+            }
+            .dropdown-item:last-child { border-bottom: none; }
+            .dropdown-item:hover,
+            .dropdown-item.focused { background: var(--hover-bg); }
+
+            .dropdown-ref {
+                flex-shrink: 0;
+                font-size: 12px;
+                font-weight: 700;
+                color: var(--primary-color);
+                min-width: 72px;
+            }
+
+            .dropdown-text {
+                font-size: 14px;
+                color: var(--text-main);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .dropdown-empty {
+                padding: 24px 16px;
+                text-align: center;
+                color: var(--text-sub);
+                font-size: 14px;
+            }
+
+            /* ── 구절 본문 뷰 ───────────────────────────────────────── */
+            .passage-view {
+                display: none;
+                border: 1px solid var(--border);
+                border-radius: 8px;
+                overflow: hidden;
+                margin-bottom: 16px;
+            }
+
             /* ── 원문 가리기 ─────────────────────────────────────── */
             .cover-controls {
                 display: none;
@@ -673,6 +745,9 @@
                     font-size: 11px;
                     line-height: 1.4;
                 }
+                .dropdown-item { padding: 12px 14px; }
+                .dropdown-ref { font-size: 11px; min-width: 64px; }
+                .dropdown-text { font-size: 13px; }
 
                 /* 바텀 네비 바 */
                 .bottom-nav {
@@ -792,6 +867,7 @@
                     oninput="debouncedSearch()"
                 />
             </div>
+            <div id="searchDropdown" class="search-dropdown"></div>
         </div>
 
         <div class="container">
@@ -811,7 +887,7 @@
                 <button class="mode-tab" id="tabTranscription" onclick="switchMode('transcription')">필사 모드</button>
             </div>
 
-            <div class="cover-controls">
+            <div class="cover-controls" id="coverControls">
                 <label class="toggle-switch" title="원문 가리기">
                     <input type="checkbox" id="coverToggle" onchange="toggleCover()">
                     <span class="toggle-track"></span>
@@ -821,6 +897,7 @@
             </div>
 
             <div id="status">데이터 준비중...</div>
+            <div id="passageView" class="passage-view"></div>
             <ul id="resultList" class="result-list"></ul>
         </div>
 
@@ -982,6 +1059,8 @@
                 currentRenderCount = 0;
                 if (typeof closeExpandPanel === 'function') closeExpandPanel();
                 if (typeof removeLoadMoreBtn === 'function') removeLoadMoreBtn();
+                if (typeof closePassageView === 'function') closePassageView();
+                if (typeof closeDropdown === 'function') closeDropdown();
                 if (isDataLoaded && document.getElementById('searchInput').value.trim()) {
                     searchBible();
                 }
@@ -1037,6 +1116,90 @@
             let currentRenderCount = 0;
             let currentIsReference = false;
             const ITEMS_PER_PAGE = 20;
+            const DROPDOWN_MAX = 100;
+            let dropdownFocusIdx = -1;
+
+            function renderDropdown(results) {
+                const dropdown = document.getElementById('searchDropdown');
+                dropdown.innerHTML = '';
+                dropdownFocusIdx = -1;
+
+                if (results.length === 0) {
+                    const empty = document.createElement('div');
+                    empty.className = 'dropdown-empty';
+                    empty.textContent = '검색 결과가 없습니다.';
+                    dropdown.appendChild(empty);
+                } else {
+                    const meta = document.createElement('div');
+                    meta.className = 'dropdown-meta';
+                    meta.textContent = results.length > DROPDOWN_MAX
+                        ? `${results.length.toLocaleString()}개 결과 (상위 ${DROPDOWN_MAX}개 표시)`
+                        : `${results.length.toLocaleString()}개 결과`;
+                    dropdown.appendChild(meta);
+
+                    const limit = Math.min(results.length, DROPDOWN_MAX);
+                    for (let i = 0; i < limit; i++) {
+                        const item = results[i];
+                        const row = document.createElement('div');
+                        row.className = 'dropdown-item';
+                        row.dataset.idx = i;
+
+                        const ref = document.createElement('span');
+                        ref.className = 'dropdown-ref';
+                        ref.textContent = `${item.book}${item.chapter}:${item.verse}`;
+
+                        const text = document.createElement('span');
+                        text.className = 'dropdown-text';
+                        if (!currentIsReference && currentQuery) {
+                            const parts = item.content.split(currentQuery);
+                            parts.forEach((part, idx) => {
+                                text.appendChild(document.createTextNode(part));
+                                if (idx < parts.length - 1) {
+                                    const mark = document.createElement('span');
+                                    mark.className = 'highlight';
+                                    mark.textContent = currentQuery;
+                                    text.appendChild(mark);
+                                }
+                            });
+                        } else {
+                            text.textContent = item.content;
+                        }
+
+                        row.appendChild(ref);
+                        row.appendChild(text);
+                        row.addEventListener('click', () => {
+                            openPassageView(item);
+                            closeDropdown();
+                        });
+                        row.addEventListener('mouseenter', () => {
+                            setDropdownFocus(i);
+                        });
+                        dropdown.appendChild(row);
+                    }
+                }
+
+                openDropdown();
+            }
+
+            function openDropdown() {
+                document.getElementById('searchDropdown').classList.add('open');
+            }
+
+            function closeDropdown() {
+                document.getElementById('searchDropdown').classList.remove('open');
+                dropdownFocusIdx = -1;
+            }
+
+            function setDropdownFocus(idx) {
+                const dropdown = document.getElementById('searchDropdown');
+                const items = dropdown.querySelectorAll('.dropdown-item');
+                items.forEach(el => el.classList.remove('focused'));
+                if (idx >= 0 && idx < items.length) {
+                    items[idx].classList.add('focused');
+                    items[idx].scrollIntoView({ block: 'nearest' });
+                    dropdownFocusIdx = idx;
+                }
+            }
 
             // Book Name Mapping (Full -> Abbr)
             const BOOK_MAP = {
@@ -1189,6 +1352,32 @@
                         "데이터 로드 실패. 새로고침 해주세요.";
                     statusEl.style.color = "red";
                 }
+
+                // 키보드 네비게이션
+                document.getElementById('searchInput').addEventListener('keydown', (e) => {
+                    const dropdown = document.getElementById('searchDropdown');
+                    if (!dropdown.classList.contains('open')) return;
+                    const items = dropdown.querySelectorAll('.dropdown-item');
+                    if (e.key === 'ArrowDown') {
+                        e.preventDefault();
+                        setDropdownFocus(Math.min(dropdownFocusIdx + 1, items.length - 1));
+                    } else if (e.key === 'ArrowUp') {
+                        e.preventDefault();
+                        setDropdownFocus(Math.max(dropdownFocusIdx - 1, 0));
+                    } else if (e.key === 'Enter' && dropdownFocusIdx >= 0) {
+                        e.preventDefault();
+                        items[dropdownFocusIdx].click();
+                    } else if (e.key === 'Escape') {
+                        closeDropdown();
+                    }
+                });
+
+                // 외부 클릭 시 드롭다운 닫기
+                document.addEventListener('click', (e) => {
+                    if (!e.target.closest('.search-header')) {
+                        closeDropdown();
+                    }
+                });
             };
 
             function registerServiceWorker() {
@@ -1201,37 +1390,36 @@
 
             function searchBible() {
                 if (!isDataLoaded) return;
-
-                const input = document
-                    .getElementById("searchInput")
-                    .value.trim();
-                if (!input) return;
-
+                const input = document.getElementById("searchInput").value.trim();
+                if (!input) {
+                    closeDropdown();
+                    closePassageView();
+                    document.getElementById('status').textContent = '';
+                    return;
+                }
                 localStorage.setItem('bibleQuery', input);
                 closeExpandPanel();
                 currentQuery = input;
-
                 const searchResult = performSearch(input);
                 currentResults = searchResult.data;
                 currentIsReference = searchResult.isReference;
 
-                const list = document.getElementById("resultList");
-                const status = document.getElementById("status");
-                list.innerHTML = "";
-                currentRenderCount = 0;
-
-                if (currentResults.length === 0) {
-                    status.textContent = "검색 결과가 없습니다.";
-                    removeLoadMoreBtn();
-                    return;
-                }
-
-                status.textContent = "";
-
-                if (currentIsReference) {
-                    renderBatch(currentResults.length);
+                if (currentMode === 'transcription') {
+                    closeDropdown();
+                    const list = document.getElementById("resultList");
+                    const status = document.getElementById("status");
+                    list.innerHTML = "";
+                    currentRenderCount = 0;
+                    if (currentResults.length === 0) {
+                        status.textContent = "검색 결과가 없습니다.";
+                        removeLoadMoreBtn();
+                        return;
+                    }
+                    status.textContent = "";
+                    if (currentIsReference) renderBatch(currentResults.length);
+                    else renderBatch(ITEMS_PER_PAGE);
                 } else {
-                    renderBatch(ITEMS_PER_PAGE);
+                    renderDropdown(currentResults);
                 }
             }
 
@@ -1455,6 +1643,94 @@
             function removeLoadMoreBtn() {
                 const existing = document.getElementById("loadMoreContainer");
                 if (existing) existing.remove();
+            }
+
+            // ── Passage View ─────────────────────────────────────────────
+            let activePassageView = null; // { observer }
+
+            function closePassageView() {
+                if (activePassageView) {
+                    if (activePassageView.observer) activePassageView.observer.disconnect();
+                    activePassageView = null;
+                }
+                const pv = document.getElementById('passageView');
+                pv.innerHTML = '';
+                pv.style.display = 'none';
+            }
+
+            function openPassageView(item) {
+                closePassageView();
+                closeExpandPanel();
+
+                const pv = document.getElementById('passageView');
+                pv.style.display = 'block';
+
+                const originIdx = bibleData.findIndex(
+                    v => v.book === item.book && v.chapter === item.chapter && v.verse === item.verse
+                );
+                if (originIdx === -1) return;
+
+                let curTopIdx = Math.max(0, originIdx - EXPAND_BATCH);
+                let curBottomIdx = Math.min(bibleData.length - 1, originIdx + EXPAND_BATCH);
+
+                const topSentinel = document.createElement('div');
+                topSentinel.className = 'expand-sentinel';
+                const versesContainer = document.createElement('div');
+                versesContainer.className = 'expand-verses';
+                const bottomSentinel = document.createElement('div');
+                bottomSentinel.className = 'expand-sentinel';
+
+                pv.appendChild(topSentinel);
+                pv.appendChild(versesContainer);
+                pv.appendChild(bottomSentinel);
+
+                for (let i = curTopIdx; i <= curBottomIdx; i++) {
+                    versesContainer.appendChild(makeModalVerse(bibleData[i], i === originIdx));
+                }
+
+                // Scroll origin into view
+                const originEl = versesContainer.querySelector('.origin');
+                if (originEl) {
+                    requestAnimationFrame(() => {
+                        const headerH = document.querySelector('.search-header').offsetHeight;
+                        const rect = originEl.getBoundingClientRect();
+                        const targetY = window.scrollY + rect.top - headerH - 20;
+                        window.scrollTo({ top: targetY, behavior: 'smooth' });
+                    });
+                }
+
+                // Infinite scroll
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (!entry.isIntersecting) return;
+                        if (entry.target === topSentinel && curTopIdx > 0) {
+                            const newTop = Math.max(0, curTopIdx - EXPAND_BATCH);
+                            const frag = document.createDocumentFragment();
+                            for (let i = newTop; i < curTopIdx; i++) {
+                                frag.appendChild(makeModalVerse(bibleData[i], i === originIdx));
+                            }
+                            versesContainer.insertBefore(frag, versesContainer.firstChild);
+                            curTopIdx = newTop;
+                        }
+                        if (entry.target === bottomSentinel && curBottomIdx < bibleData.length - 1) {
+                            const newBottom = Math.min(bibleData.length - 1, curBottomIdx + EXPAND_BATCH);
+                            const frag = document.createDocumentFragment();
+                            for (let i = curBottomIdx + 1; i <= newBottom; i++) {
+                                frag.appendChild(makeModalVerse(bibleData[i], i === originIdx));
+                            }
+                            versesContainer.appendChild(frag);
+                            curBottomIdx = newBottom;
+                        }
+                    });
+                }, { root: null, threshold: 0 });
+
+                observer.observe(topSentinel);
+                observer.observe(bottomSentinel);
+
+                activePassageView = { observer };
+
+                // Attach drag-select to passage view
+                setupPanelDragSelect(versesContainer, pv);
             }
 
             // ── Inline Expand Panel ──────────────────────────────────────
